@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>MVVM cross platform generic implementation of Control Value bindable behaviors.</Description>
+    <RepositoryUrl>https://github.com/vergaraunited/MobileDeliveryMVVM</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,15 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MobileDeliveryCaching" Version="1.0.0" />
+    <PackageReference Include="MobileDeliveryClient" Version="1.0.0" />
+    <PackageReference Include="MobileDeliveryLogger" Version="1.0.0" />
+    <PackageReference Include="MobileDeliverySettings" Version="1.0.0" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.6.292" />
+    <PackageReference Include="UMDGeneral" Version="1.0.0" />
     <PackageReference Include="Xam.Plugins.Settings" Version="3.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DataCaching\DataCaching.csproj" />
-    <ProjectReference Include="..\MobileDeliveryClient\MobileDeliveryClient.csproj" />
-    <ProjectReference Include="..\MobileDeliveryLogger\MobileDeliveryLogger.csproj" />
-    <ProjectReference Include="..\MobileDeliverySettings\MobileDeliverySettings.csproj" />
-    <ProjectReference Include="..\UMDGeneral\UMDGeneral.csproj" />
   </ItemGroup>
 
   <ItemGroup>
