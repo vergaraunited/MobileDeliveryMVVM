@@ -7,8 +7,6 @@ using static UMDGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
 using System.Threading.Tasks;
 using UMDGeneral.Settings;
-using Plugin.Settings.Abstractions;
-using Plugin.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {

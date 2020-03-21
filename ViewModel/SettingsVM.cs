@@ -1,8 +1,6 @@
 ﻿using MobileDeliveryClient.Logging;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliverySettings;
-using Plugin.Settings;
-using Plugin.Settings.Abstractions;
 using UMDGeneral.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel

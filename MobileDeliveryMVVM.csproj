@@ -15,23 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MobileDeliveryCaching" Version="1.0.0" />
-    <PackageReference Include="MobileDeliveryClient" Version="1.0.0" />
+    <PackageReference Include="MobileDeliveryCaching" Version="1.1.0" />
+    <PackageReference Include="MobileDeliveryClient" Version="1.1.0" />
     <PackageReference Include="MobileDeliveryLogger" Version="1.0.0" />
     <PackageReference Include="MobileDeliverySettings" Version="1.0.0" />
-    <PackageReference Include="sqlite-net-pcl" Version="1.6.292" />
-    <PackageReference Include="UMDGeneral" Version="1.0.0" />
-    <PackageReference Include="Xam.Plugins.Settings" Version="3.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Windows.Foundation.UniversalApiContract">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\References\10.0.17763.0\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
-      <IsWinMDFile>true</IsWinMDFile>
-    </Reference>
-    <Reference Include="Xamarin.iOS">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\ReferenceAssemblies\Microsoft\Framework\Xamarin.iOS\v1.0\Xamarin.iOS.dll</HintPath>
-    </Reference>
+    <PackageReference Include="UMDGeneral" Version="1.1.0" />
   </ItemGroup>
 
 </Project>
