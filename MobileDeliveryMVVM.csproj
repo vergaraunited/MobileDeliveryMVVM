@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' != 'Release'">
-    <ProjectReference Include="MobileDeliveryCaching\MobileDeliveryCaching.csproj" />
-    <ProjectReference Include="MobileDeliveryClient\MobileDeliveryClient.csproj" />
-    <ProjectReference Include="MobileDeliveryLogger\MobileDeliveryLogger.csproj" />
-    <ProjectReference Include="MobileDeliverySettings\MobileDeliverySettings.csproj" />
-    <ProjectReference Include="UMDGeneral\UMDGeneral.csproj" />
+    <ProjectReference Include="..\MobileDeliveryCaching\MobileDeliveryCaching.csproj" />
+    <ProjectReference Include="..\MobileDeliveryClient\MobileDeliveryClient.csproj" />
+    <ProjectReference Include="..\MobileDeliveryLogger\MobileDeliveryLogger.csproj" />
+    <ProjectReference Include="..\MobileDeliverySettings\MobileDeliverySettings.csproj" />
+    <ProjectReference Include="..\UMDGeneral\UMDGeneral.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="MobileDeliveryCaching" Version="1.1.0" />
