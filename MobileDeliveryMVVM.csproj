@@ -14,12 +14,19 @@
     <Compile Remove="MobileDeliveryServer\Command\CommandRouter.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="MobileDeliveryCaching" Version="1.1.0" />
     <PackageReference Include="MobileDeliveryClient" Version="1.1.0" />
-    <PackageReference Include="MobileDeliveryLogger" Version="1.0.0" />
+    <PackageReference Include="MobileDeliveryLogger" Version="1.1.1" />
     <PackageReference Include="MobileDeliverySettings" Version="1.0.0" />
-    <PackageReference Include="UMDGeneral" Version="1.1.0" />
+    <PackageReference Include="UMDGeneral" Version="1.2.5" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
+    <ProjectReference Include="..\..\MobileDeliveryCaching\MobileDeliveryCaching.csproj" />
+    <ProjectReference Include="..\..\MobileDeliveryClient\MobileDeliveryClient.csproj" />
+    <ProjectReference Include="..\..\MobileDeliveryLogger\MobileDeliveryLogger.csproj" />
+    <ProjectReference Include="..\..\UMDGeneral\UMDGeneral.csproj" />
   </ItemGroup>
 
 </Project>
