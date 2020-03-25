@@ -8,13 +8,21 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIconUrl>https://unitedwindowmfg.com/wp-content/uploads/2017/02/New-Logo-4.png</PackageIconUrl>
     <Version>1.1.0</Version>
+    <Configurations>Debug;Release;Dev</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="MobileDeliveryServer\Command\CommandRouter.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
+    <ProjectReference Include="MobileDeliveryCaching\MobileDeliveryCaching.csproj" />
+    <ProjectReference Include="MobileDeliveryClient\MobileDeliveryClient.csproj" />
+    <ProjectReference Include="MobileDeliveryLogger\MobileDeliveryLogger.csproj" />
+    <ProjectReference Include="MobileDeliverySettings\MobileDeliverySettings.csproj" />
+    <ProjectReference Include="UMDGeneral\UMDGeneral.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="MobileDeliveryCaching" Version="1.1.0" />
     <PackageReference Include="MobileDeliveryClient" Version="1.1.0" />
     <PackageReference Include="MobileDeliveryLogger" Version="1.0.0" />
