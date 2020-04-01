@@ -19,7 +19,7 @@ namespace MobileDeliveryMVVM.ViewModel
 {
     public class TruckVM : BaseViewModel<TruckData>
     {
-        int truckcount = 0;
+        int truckcount = 0;     
         public int TRUCKCOUNT { get { return truckcount; } set { SetProperty<int>(ref truckcount, value); } }
 
         private DelegateCommand _loadCommand;

@@ -11,6 +11,7 @@ using UMDGeneral.Settings;
 using static UMDGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
 using UMDGeneral.Events;
+using MobileDeliveryMVVM.Models;
 
 namespace MobileDeliveryMVVM.BaseClasses
 {
@@ -65,7 +66,12 @@ namespace MobileDeliveryMVVM.BaseClasses
         }
 
         public virtual void Clear(object obj) { }
-        public virtual void Refresh(object obj) { }
+        public virtual void Refresh(object obj) {
+            SettingsModel set = (SettingsModel)obj;
+            winSys.Disconnect();
+            umdSrv.Disconnect();
+            InitConnections(set.UMDUrl, (ushort)set.UMDPort, set.WinsysUrl, (ushort)set.WinsysPort );
+        }
 
         public virtual isaCommand ReceiveMessageCB(isaCommand cmd)
         {

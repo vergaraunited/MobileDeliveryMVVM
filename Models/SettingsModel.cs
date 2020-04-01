@@ -1,22 +1,27 @@
-﻿using System;
+﻿using MobileDeliverySettings;
+using System;
 using UMDGeneral.Definitions;
 using UMDGeneral.Interfaces.DataInterfaces;
-using UMDGeneral.Settings;
+using Plugin.Settings;
+using Plugin.Settings.Abstractions;
 
 namespace MobileDeliveryMVVM.Models
 {
-    public class SettingsModel : BaseModel//, isaSettings
+    public class SettingsModel : BaseModel, isaSettings
     {
-        //private Settings settings =  Settings.Current;
+       // private Settings settings =  Settings.;
 
-    //    public string LogLevel { get { return settings.LogLevel; } set { settings.LogLevel = value; OnPropertyChanged("LogLevel"); } }
-    //    public string Url { get { return settings.Url; } set {settings.Url=value; OnPropertyChanged("Url"); } }
-    //    public int Port { get { return settings.Port; } set { settings.Port = value; OnPropertyChanged("Port"); } }
-    //    public string WinsysUrl { get {return settings.WinsysUrl; } set {settings.WinsysUrl = value; OnPropertyChanged("WinsysUrl"); } }
-    //    public int WinsysPort { get { return settings.WinsysPort; } set {settings.WinsysPort = value; OnPropertyChanged("WinsysPort"); } }
-    //    public string UMDUrl { get{ return settings.UMDUrl; } set {settings.UMDUrl = value; OnPropertyChanged("UMDUrl"); } }
-    //    public int UMDPort { get { return settings.UMDPort; } set { settings.UMDPort = value; OnPropertyChanged("UMDPort"); } }
-    //    public MsgTypes.eCommand Command { get { return settings.Command; } set { settings.Command = value; OnPropertyChanged("Command"); } }
-    //    public Guid RequestId { get { return settings.RequestId; } set { settings.RequestId = value; OnPropertyChanged("RequestId"); } }
+        public string AppName { get { return Settings.AppName; } set { Settings.AppName = value; OnPropertyChanged("AppName"); } }
+        public string LogLevel { get { return Settings.LogLevel; } set { Settings.LogLevel = value; OnPropertyChanged("LogLevel"); } }
+        public string LogPath { get { return Settings.LogPath; } set { Settings.LogPath = value; OnPropertyChanged("LogPath"); } }
+        public string Url { get { return Settings.Url; } set {Settings.Url=value; OnPropertyChanged("Url"); } }
+        public int Port { get { return Settings.Port; } set { Settings.Port = value; OnPropertyChanged("Port"); } }
+        public string WinsysUrl { get {return Settings.WinsysUrl; } set {Settings.WinsysUrl = value; OnPropertyChanged("WinsysUrl"); } }
+        public int WinsysPort { get { return Settings.WinsysPort; } set {Settings.WinsysPort = value; OnPropertyChanged("WinsysPort"); } }
+        public string UMDUrl { get{ return Settings.UMDUrl; } set {Settings.UMDUrl = value; OnPropertyChanged("UMDUrl"); } }
+        public int UMDPort { get { return Settings.UMDPort; } set { Settings.UMDPort = value; OnPropertyChanged("UMDPort"); } }
+        public string SQLConn { get { return Settings.SQLConn; } set { Settings.SQLConn = value; OnPropertyChanged("SQLConn"); } }
+        public MsgTypes.eCommand Command { get { return Settings.Command; } set { Settings.Command = value; OnPropertyChanged("Command"); } }
+        public Guid RequestId { get { return Settings.RequestId; } set { Settings.RequestId = value; OnPropertyChanged("RequestId"); } }
     }
 }
