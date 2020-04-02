@@ -7,18 +7,20 @@
     <RepositoryType>Git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIconUrl>https://unitedwindowmfg.com/wp-content/uploads/2017/02/New-Logo-4.png</PackageIconUrl>
-    <Version>1.1.0</Version>
+    <Version>1.3.0</Version>
     <Configurations>Debug;Release;Dev</Configurations>
+    <PackageTags>MobileDelivery Settings UMD</PackageTags>
+    <PackageReleaseNotes>Auto nupkg</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MobileDeliveryCaching" Version="1.3.2" />
     <PackageReference Include="Xam.Plugins.Settings" Version="3.1.1" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="MobileDeliveryCaching" Version="1.3.0" />
-    <PackageReference Include="MobileDeliveryClient" Version="1.3.0" />
-    <PackageReference Include="MobileDeliverySettings" Version="1.1.0" />
+    <PackageReference Include="MobileDeliveryClient" Version="1.3.1" />
+    <PackageReference Include="MobileDeliverySettings" Version="1.3.0" />
   </ItemGroup>
 
 <ItemGroup>
