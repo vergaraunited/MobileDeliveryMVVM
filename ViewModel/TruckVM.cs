@@ -8,12 +8,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
-using UMDGeneral.Data;
-using UMDGeneral.Threading;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Data;
+using MobileDeliveryGeneral.Threading;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Linq;
-using UMDGeneral.Definitions;
-using UMDGeneral.Settings;
+using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryGeneral.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {

@@ -1,9 +1,9 @@
 ﻿using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
 using MobileDeliveryMVVM.Models;
-using UMDGeneral.Interfaces;
-using UMDGeneral.Settings;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Interfaces;
+using MobileDeliveryGeneral.Settings;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.ViewModel
 {

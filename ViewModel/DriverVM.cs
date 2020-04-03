@@ -2,11 +2,11 @@
 using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.ObjectModel;
-using UMDGeneral.Data;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Data;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
 using System.Threading.Tasks;
-using UMDGeneral.Settings;
+using MobileDeliveryGeneral.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {

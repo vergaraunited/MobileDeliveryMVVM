@@ -3,7 +3,7 @@ using MobileDeliveryMVVM.Command;
 using MobileDeliveryMVVM.Models;
 using MobileDeliverySettings;
 using System;
-using UMDGeneral.Settings;
+using MobileDeliveryGeneral.Settings;
 using Windows.ApplicationModel;
 
 namespace MobileDeliveryMVVM.ViewModel
@@ -107,7 +107,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
         private void OnSaveSettings(object obj)
         {
-            // Command = UMDGeneral.Definitions.MsgTypes.eCommand.LoadSettings,
+            // Command = MobileDeliveryGeneral.Definitions.MsgTypes.eCommand.LoadSettings,
             //jsonify the settings into UMDConfig and persist the obj.
             var umdcfg = new UMDAppConfig()
             {
@@ -164,7 +164,7 @@ namespace MobileDeliveryMVVM.ViewModel
         {
             //settings = new Settings()
             //{
-            //    Command = UMDGeneral.Definitions.MsgTypes.eCommand.LoadSettings,
+            //    Command = MobileDeliveryGeneral.Definitions.MsgTypes.eCommand.LoadSettings,
             //    LogLevel = config.LogLevel.ToString(),
             //    Url = config.srvSet.url,
             //    Port  = config.srvSet.port,

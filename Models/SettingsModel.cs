@@ -1,7 +1,7 @@
 ﻿using MobileDeliverySettings;
 using System;
-using UMDGeneral.Definitions;
-using UMDGeneral.Interfaces.DataInterfaces;
+using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using Plugin.Settings;
 using Plugin.Settings.Abstractions;
 

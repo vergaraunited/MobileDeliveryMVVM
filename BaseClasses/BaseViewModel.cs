@@ -1,9 +1,9 @@
 ﻿using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.Generic;
-using UMDGeneral.Definitions;
-using UMDGeneral.Interfaces.DataInterfaces;
-using UMDGeneral.Settings;
+using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
+using MobileDeliveryGeneral.Settings;
 using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.BaseClasses

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using UMDGeneral.Data;
-using UMDGeneral.ExtMethods;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Data;
+using MobileDeliveryGeneral.ExtMethods;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.Models
 {

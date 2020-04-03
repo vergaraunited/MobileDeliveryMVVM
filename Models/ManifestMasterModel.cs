@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using UMDGeneral.Data;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Data;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
 
 namespace MobileDeliveryMVVM.Models

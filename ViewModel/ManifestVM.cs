@@ -3,18 +3,18 @@ using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using UMDGeneral.Data;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Data;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Threading.Tasks;
-using UMDGeneral.Threading;
-using UMDGeneral.Interfaces.DataInterfaces;
+using MobileDeliveryGeneral.Threading;
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using System.Collections.Generic;
-using UMDGeneral.Definitions;
-using UMDGeneral.Interfaces;
+using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryGeneral.Interfaces;
 using MobileDeliveryLogger;
-using UMDGeneral.BaseClasses;
+using MobileDeliveryGeneral.BaseClasses;
 using System.ComponentModel;
-using UMDGeneral.Settings;
+using MobileDeliveryGeneral.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {

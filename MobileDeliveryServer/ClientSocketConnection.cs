@@ -1,11 +1,11 @@
-﻿using MobileDeliveryClient.API;
+﻿//using MobileDeliveryClient.API;
 using MobileDeliveryLogger;
 using System.Threading.Tasks;
-using UMDGeneral.Definitions;
-using UMDGeneral.Interfaces;
-using UMDGeneral.Settings;
-using UMDGeneral.Utilities;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryGeneral.Interfaces;
+using MobileDeliveryGeneral.Settings;
+using MobileDeliveryGeneral.Utilities;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.MobileDeliveryServer
 {

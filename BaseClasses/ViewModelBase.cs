@@ -5,12 +5,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using UMDGeneral.Interfaces;                
-using UMDGeneral.Interfaces.DataInterfaces;
-using UMDGeneral.Settings;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Interfaces;                
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
+using MobileDeliveryGeneral.Settings;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
-using UMDGeneral.Events;
+using MobileDeliveryGeneral.Events;
 using MobileDeliveryMVVM.Models;
 
 namespace MobileDeliveryMVVM.BaseClasses

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using static UMDGeneral.Definitions.MsgTypes;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.Models
 {

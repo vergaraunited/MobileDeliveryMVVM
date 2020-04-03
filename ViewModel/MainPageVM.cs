@@ -3,8 +3,8 @@ using System.ComponentModel;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
 using System.Threading;
-using UMDGeneral.Interfaces.DataInterfaces;
-using UMDGeneral.Data;
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
+using MobileDeliveryGeneral.Data;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -16,7 +16,7 @@ namespace MobileDeliveryMVVM.ViewModel
         public ICommand ConnectCommand { get; set; }
 
         //static ProgressChanged<ManifestMasterData> main = null;
-        public MainPageVM() : base(new UMDGeneral.Settings.UMDAppConfig() { AppName = "MainPageVM" })
+        public MainPageVM() : base(new MobileDeliveryGeneral.Settings.UMDAppConfig() { AppName = "MainPageVM" })
         {
             ViewContext = SynchronizationContext.Current;
         }

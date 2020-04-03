@@ -9,11 +9,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using UMDGeneral.Data;
-using UMDGeneral.Definitions;
-using UMDGeneral.Settings;
-using UMDGeneral.Threading;
-using static UMDGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Data;
+using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryGeneral.Settings;
+using MobileDeliveryGeneral.Threading;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
