@@ -2,8 +2,7 @@
 ## UMD MVVM - generic/cross platform MVVM sub module
 
 ## Configuration
-#### Configuration is built into the docker image based on the settings in the app.config
-
+#### Configuration
 ```xml
 <appSettings>
     <add key="LogPath" value="C:\app\logs\" />
@@ -67,3 +66,7 @@ MobileDeliveryGeneral   |   1.4.3   |  Mobile Delivery General Code with Symbols
     <add key="ClientSettingsProvider.ServiceUri" value="" />
 </appSettings>`
 ```
+
+**ToDo**<br/>
+**_:x: Built into the docker image based on the settings in the app.config_**<br/>
+**_:heavy_exclamation_mark: Consolidate into MobileDeliverySettings_**<br/>
