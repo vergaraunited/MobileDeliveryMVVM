@@ -1,8 +1,24 @@
 # MobileDeliveryMVVM
 ## UMD MVVM - generic/cross platform MVVM sub module
 
+## Configuration
+#### Configuration is built into the docker image based on the settings in the app.config
 
-## NuGet Package References
+```xml
+<appSettings>
+    <add key="LogPath" value="C:\app\logs\" />
+    <add key="LogLevel" value="Info" />
+    <add key="Url" value="localhost" />
+    <add key="Port" value="81" />
+    <add key="SQLConn" value="" />
+    <add key="WinsysUrl" value="localhost" />
+    <add key="WinsysPort" value="8181" />
+    <add key="WinsysSrcFilePath" value="\\Fs01\vol1\Winsys32\DATA" />
+    <!-- If left empty WinsysDestFilePath defaults to Environment.GetFolderPath(Environment.SpecialFolder.Desktop)-->
+    <add key="WinsysDstFilePath" value="" />
+    <add key="ClientSettingsProvider.ServiceUri" value="" />
+</appSettings>`
+```
 
 ##### nuget.config file
 ```xml
@@ -19,6 +35,7 @@
 </configuration>
 ```
 
+## NuGet Package References
 Package Name            |  Version  |  Description
 --------------------    |  -------  |  -----------
 MobileDeliverySettings  |   1.4.3   |  Mobile Delivery Settings base code for all configurable components with Symbols
