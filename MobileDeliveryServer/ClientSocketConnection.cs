@@ -1,5 +1,4 @@
-﻿//using MobileDeliveryClient.API;
-using MobileDeliveryLogger;
+﻿using MobileDeliveryLogger;
 using System.Threading.Tasks;
 using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Interfaces;
@@ -16,7 +15,6 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
         UMDServerConnection srvr;
         ReceiveMessages rmsg;
         SendMessages smsg;
-        //SendMsgDelegate msgSnd;
         public string Url { get; set; }
         public ushort Port { get; set; }
         public string name { get; set; }
@@ -41,7 +39,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
 
         public bool Connect()
         {
-            Logger.Debug("Client Socket Connect " + name);
+            Logger.Info($"Client {name} Socket Connecting to Server ws://{Url}:{Port}.");
             var task = Task.Run(async () => srvr.Connect());
           
             return true;
@@ -49,7 +47,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
 
         public bool Disconnect()
         {
-            Logger.Debug("Client Socket Disconnect " + name);
+            Logger.Info($"Client Socket {name} Disconnect from Server ws://{Url}:{Port}.");
             srvr.Disconnect();
             return true;
         }
