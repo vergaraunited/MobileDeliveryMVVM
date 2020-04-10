@@ -12,7 +12,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
     public class ClientSocketConnection : isaMobileDeliveryClient
     {
         const ushort defPort = 8181;
-        UMDServerConnection srvr;
+        ClientToServerConnection srvr;
         ReceiveMessages rmsg;
         SendMessages smsg;
         public string Url { get; set; }
@@ -33,7 +33,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
             if (rm == null)
                 rm = new ReceiveMsgDelegate(MsgProcessor.ReceiveMessage);
 
-            srvr = new UMDServerConnection(srvSet, ref sm, rm);
+            srvr = new ClientToServerConnection(srvSet, ref sm, rm);
             smsg = new SendMessages(sm);
         }
 

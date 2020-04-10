@@ -200,7 +200,7 @@ namespace MobileDeliveryMVVM.ViewModel
         {
             //Do we know about this in ther DB?
             var stop = GetStop(sd);
-            var si = new Stop(sd);
+            var si = new Stop(stop);
             if (stop != null)
                 stopdatabase.DeleteItem(si);
             //Cache and Add

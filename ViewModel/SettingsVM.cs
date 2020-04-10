@@ -32,21 +32,21 @@ namespace MobileDeliveryMVVM.ViewModel
                 else throw new Exception("Integer Values for Port Setting");
             } }
 
-        string umdurl;
+        string srvurl;
         public string UMDURL { get { return settings.UMDUrl; }
             set {
-                SetProperty<string>(ref umdurl, value);
+                SetProperty<string>(ref srvurl, value);
                 settings.UMDUrl = value;
             }
         } 
 
-        string umdport;
+        string srvport;
         public string UMDPORT { get { return settings.UMDPort.ToString(); } set
             {
                 int res;
                 if (Int32.TryParse(value, out res))
                 {
-                    SetProperty<string>(ref umdport, value);
+                    SetProperty<string>(ref srvport, value);
 
                     settings.UMDPort = res;
                 }
@@ -119,10 +119,10 @@ namespace MobileDeliveryMVVM.ViewModel
                 {
                     url = settings.Url,
                     port = (ushort)settings.Port,
-                    umdport = (ushort)settings.UMDPort,
-                    umdurl = settings.UMDUrl,
-                    WinSysUrl = settings.WinsysUrl,
-                    WinSysPort = (ushort)settings.WinsysPort
+                    srvport = (ushort)settings.UMDPort,
+                    srvurl = settings.UMDUrl,
+                    clienturl = settings.WinsysUrl,
+                    clientport = (ushort)settings.WinsysPort
                 },
                 // Version=
                 // winsysFiles
@@ -147,10 +147,10 @@ namespace MobileDeliveryMVVM.ViewModel
             cf.SQLConn = Settings.SQLConn;
             cf.srvSet.port = (ushort)Settings.Port;
             cf.srvSet.url = Settings.Url;
-            cf.srvSet.WinSysPort = (ushort)Settings.WinsysPort;
-            cf.srvSet.WinSysUrl = Settings.WinsysUrl;
-            cf.srvSet.umdurl = Settings.UMDUrl;
-            cf.srvSet.umdport = (ushort)Settings.UMDPort;
+            cf.srvSet.clientport = (ushort)Settings.WinsysPort;
+            cf.srvSet.clienturl = Settings.WinsysUrl;
+            cf.srvSet.srvurl = Settings.UMDUrl;
+            cf.srvSet.srvport = (ushort)Settings.UMDPort;
 
             cf.Version = string.Format("Version: {0}.{1}.{2}.{3}",
                     Package.Current.Id.Version.Major,
@@ -168,10 +168,10 @@ namespace MobileDeliveryMVVM.ViewModel
             //    LogLevel = config.LogLevel.ToString(),
             //    Url = config.srvSet.url,
             //    Port  = config.srvSet.port,
-            //    UMDUrl = config.srvSet.umdurl,
-            //    UMDPort = config.srvSet.umdport,
-            //    WinsysUrl = config.srvSet.WinSysUrl,
-            //    WinsysPort = config.srvSet.WinSysPort                
+            //    UMDUrl = config.srvSet.srvurl,
+            //    UMDPort = config.srvSet.srvport,
+            //    WinsysUrl = config.srvSet.clienturl,
+            //    WinsysPort = config.srvSet.clientport                
             //};
         }
     }

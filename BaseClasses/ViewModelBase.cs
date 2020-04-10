@@ -42,7 +42,7 @@ namespace MobileDeliveryMVVM.BaseClasses
                     config.InitSrvSet();
                 }
 
-                InitConnections(config.srvSet.url, config.srvSet.port, config.srvSet.WinSysUrl, config.srvSet.WinSysPort);
+                InitConnections(config.srvSet.url, config.srvSet.port, config.srvSet.clienturl, config.srvSet.clientport);
 
                 sm = new SendMsgDelegate(SendMessage);
             }           
@@ -56,12 +56,12 @@ namespace MobileDeliveryMVVM.BaseClasses
             this.wport = wport;
             rm = new ReceiveMsgDelegate(ReceiveMessageCB);
             //Connect to WinSys Server
-            winSys = new ClientSocketConnection(new SocketSettings() { port = this.wport, url = this.wurl, WinSysUrl=wurl, WinSysPort=wport, name = name }, ref smWinsys, rm);
+            winSys = new ClientSocketConnection(new SocketSettings() { port = this.wport, url = this.wurl, clienturl=wurl, clientport=wport, name = name }, ref smWinsys, rm);
             winSys.Connect();
 
             
             //Connect to UMD Server
-            umdSrv = new ClientSocketConnection(new SocketSettings() { port = this.port, url = this.url, WinSysUrl = wurl, WinSysPort = wport, name = name }, ref smUMDSrv, rm);
+            umdSrv = new ClientSocketConnection(new SocketSettings() { port = this.port, url = this.url, clienturl = wurl, clientport = wport, name = name }, ref smUMDSrv, rm);
             umdSrv.Connect();
         }
 

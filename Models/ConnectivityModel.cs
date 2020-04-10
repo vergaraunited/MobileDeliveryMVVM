@@ -51,8 +51,8 @@ namespace MobileDeliveryMVVM.Models
             umdSrv.Connect();
 
             SocketSettings set = new SocketSettings();
-            set.url = srvSet.WinSysUrl;
-            set.port = srvSet.WinSysPort;
+            set.url = srvSet.clienturl;
+            set.port = srvSet.clientport;
             set.name = srvSet.name + "_ToWinSys";
 
             //Connect to WinSys Server

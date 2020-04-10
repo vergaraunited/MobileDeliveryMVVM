@@ -16,12 +16,12 @@ namespace MobileDeliveryMVVM.BaseClasses
         public BaseViewModel(UMDAppConfig config) : base(config)
         {
             //Settings.Current.LogLevel = config.LogLevel.ToString();
-            //Settings.Current.UMDPort = config.srvSet.umdport;
-            //Settings.Current.UMDUrl = config.srvSet.umdurl;
+            //Settings.Current.UMDPort = config.srvSet.srvport;
+            //Settings.Current.UMDUrl = config.srvSet.srvurl;
             //Settings.Current.Url = config.srvSet.url;
             //Settings.Current.Port = config.srvSet.port;
-            //Settings.Current.WinsysPort = config.srvSet.WinSysPort;
-            //Settings.Current.WinsysUrl = config.srvSet.WinSysUrl;
+            //Settings.Current.WinsysPort = config.srvSet.clientport;
+            //Settings.Current.WinsysUrl = config.srvSet.clienturl;
         }
 
         private DelegateCommand _refreshCommand;
