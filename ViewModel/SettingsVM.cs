@@ -5,6 +5,9 @@ using MobileDeliverySettings;
 using System;
 using MobileDeliveryGeneral.Settings;
 using Windows.ApplicationModel;
+using DataCaching.Caching;
+using DataCaching.Data;
+using System.IO;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -100,6 +103,68 @@ namespace MobileDeliveryMVVM.ViewModel
                 settings.SQLConn = value;
             } }
 
+
+        /// <SQLite>
+        /// SQLite cache paths
+        /// </SQLite>
+
+        string trucks;
+        public string TruckCachePath
+        {
+            get { return settings.TruckCachePath.ToString(); }
+            set
+            {
+                SetProperty<string>(ref port, value);
+                settings.TruckCachePath = value;
+            }
+        }
+
+        string orders;
+        public string OrderCachePath
+        {
+            get { return settings.OrderCachePath; }
+            set
+            {
+                SetProperty<string>(ref orders, value);
+                settings.OrderCachePath = value;
+            }
+        }
+
+        string stops;
+        public string StopCachePath
+        {
+            get { return settings.StopCachePath.ToString(); }
+            set
+            {
+                SetProperty<string>(ref stops, value);
+                settings.StopCachePath = value;
+            }
+        }
+
+        string orderdetail;
+        public string OrderDetailCachePath
+        {
+            get { return settings.OrderDetailCachePath; }
+            set
+            {
+                SetProperty<string>(ref orderdetail, value);
+                settings.OrderDetailCachePath = value;
+            }
+        }
+
+
+        //ReInitialize
+        private DelegateCommand _reInitialize;
+        public DelegateCommand ReInitializeCommand
+        { get { return _reInitialize ?? (_reInitialize = new DelegateCommand(ReInitialize)); } }
+
+        public void ReInitialize(object arg)
+        {
+            var truck = new CacheItem<Truck>(Settings.TruckCachePath);
+            truck.BackupAndClearAll();
+        }
+
+
         private DelegateCommand _saveSettings;
 
         public DelegateCommand SaveSettings
@@ -132,7 +197,16 @@ namespace MobileDeliveryMVVM.ViewModel
             base.Refresh(settings);
         }
 
-        public SettingsVM() : base(LoadConfig()) 
+        public SettingsVM() : base(new SocketSettings()
+        {
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "SettingsVM"
+        }, "SettingsVM")
         {
         }
         public static UMDAppConfig LoadConfig()
@@ -160,7 +234,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
             return cf;
         }
-        public SettingsVM( UMDAppConfig config) : base(new UMDAppConfig() { AppName = "SettingsVM" })
+        public SettingsVM( UMDAppConfig config) : base(config.srvSet, config.AppName)
         {
             //settings = new Settings()
             //{

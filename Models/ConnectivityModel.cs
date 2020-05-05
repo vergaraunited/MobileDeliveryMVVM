@@ -13,8 +13,12 @@ namespace MobileDeliveryMVVM.Models
     {
         ReceiveMsgDelegate rm;
         SendMsgDelegate sm;
-        SocketSettings srvSet;
+        string umdurl;
+        ushort umdport;
+        string name;
 
+        string winurl;
+        ushort winport;
         ClientSocketConnection winSys;
         ClientSocketConnection umdSrv;
 
@@ -24,8 +28,14 @@ namespace MobileDeliveryMVVM.Models
 
         public event PropertyChangedEventHandler PropertyChanged;        
 
-        public ConnectivityModel(SocketSettings srv, ReceiveMsgDelegate rmCB, SendMsgDelegate smCB)
+        public ConnectivityModel(string umdurl, ushort umdport, string name, string winurl, ushort winport, ReceiveMsgDelegate rmCB, SendMsgDelegate smCB)
         {
+            this.umdurl = umdurl;
+            this.umdport = umdport;
+            this.name = name;
+            this.winurl = winurl;
+            this.winport = winport;
+
             if (rmCB != null)
                 rm = rmCB;
             else
@@ -35,8 +45,7 @@ namespace MobileDeliveryMVVM.Models
                 sm = smCB;
             else
                 sm = new SendMsgDelegate(MsgProcessor.SendMessage);
-
-            srvSet = srv;
+            
             InitConnections();
         }
         public void OnPropertyChanged([CallerMemberName]string propertyName = null)
@@ -47,16 +56,11 @@ namespace MobileDeliveryMVVM.Models
         protected void InitConnections()
         {
             //Connect to UMD Server
-            umdSrv = new ClientSocketConnection(srvSet, ref sm, rm);
+            umdSrv = new ClientSocketConnection(umdurl, umdport, name + "_ToUMD", ref sm, rm);
             umdSrv.Connect();
 
-            SocketSettings set = new SocketSettings();
-            set.url = srvSet.clienturl;
-            set.port = srvSet.clientport;
-            set.name = srvSet.name + "_ToWinSys";
-
             //Connect to WinSys Server
-            winSys = new ClientSocketConnection(set, ref sm, rm);
+            winSys = new ClientSocketConnection(winurl, winport, name + "_ToWinSys", ref sm, rm);
             winSys.Connect();
         }
 

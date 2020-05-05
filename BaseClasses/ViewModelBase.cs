@@ -25,43 +25,36 @@ namespace MobileDeliveryMVVM.BaseClasses
         SendMsgDelegate smWinsys;
         SendMsgDelegate smUMDSrv;
         string name;
-        string url;
-        ushort port;
-        string wurl;
-        ushort wport;
+        string umdurl;
+        ushort umdport;
+        string winurl;
+        ushort winport;
         protected int count;
 
-        public ViewModelBase(UMDAppConfig config)
+        public ViewModelBase(SocketSettings srvSet, string name)
         {
-            if (config != null)
+            if (srvSet != null)
             {
-                if (config.AppName != null)
-                    this.name = config.AppName;
-                if (config.srvSet == null)
-                {
-                    config.InitSrvSet();
-                }
-
-                InitConnections(config.srvSet.url, config.srvSet.port, config.srvSet.clienturl, config.srvSet.clientport);
-
+                this.name = name;
+                InitConnections(srvSet.url, srvSet.port, srvSet.clienturl, srvSet.clientport);
                 sm = new SendMsgDelegate(SendMessage);
             }           
         }
 
-        public virtual void InitConnections(string url = "localhost", ushort port = 81, string wurl="localhost", ushort wport=8181)
+        public virtual void InitConnections(string umdurl = "localhost", ushort umdport = 81, string winurl="localhost", ushort winport=8181)
         {
-            this.url = url;
-            this.port = port;
-            this.wurl = wurl;
-            this.wport = wport;
+            this.umdurl = umdurl;
+            this.umdport = umdport;
+            this.winurl = winurl;
+            this.winport = winport;
             rm = new ReceiveMsgDelegate(ReceiveMessageCB);
             //Connect to WinSys Server
-            winSys = new ClientSocketConnection(new SocketSettings() { port = this.wport, url = this.wurl, clienturl=wurl, clientport=wport, name = name }, ref smWinsys, rm);
+            winSys = new ClientSocketConnection(winurl, winport, name, ref smWinsys, rm);
             winSys.Connect();
 
             
             //Connect to UMD Server
-            umdSrv = new ClientSocketConnection(new SocketSettings() { port = this.port, url = this.url, clienturl = wurl, clientport = wport, name = name }, ref smUMDSrv, rm);
+            umdSrv = new ClientSocketConnection(umdurl, umdport, name, ref smUMDSrv, rm);
             umdSrv.Connect();
         }
 
@@ -100,13 +93,17 @@ namespace MobileDeliveryMVVM.BaseClasses
             switch (cmd.command)
             {
                 case eCommand.GenerateManifest:
+                case eCommand.LoadFiles:
                     smWinsys(cmd);
                     break;
                 case eCommand.Drivers:
                 case eCommand.Stops:
                 case eCommand.Trucks:
+                case eCommand.Orders:
                 case eCommand.OrdersLoad:
                 case eCommand.OrderDetails:
+                case eCommand.UploadManifest:
+                case eCommand.CompleteStop:
                     smUMDSrv(cmd);
                     break;
                 default:

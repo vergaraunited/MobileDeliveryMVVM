@@ -6,7 +6,6 @@ using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Threading.Tasks;
 using MobileDeliveryGeneral.Data;
 using MobileDeliveryGeneral.Definitions;
@@ -14,6 +13,7 @@ using MobileDeliveryGeneral.Threading;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Linq;
 using MobileDeliveryGeneral.Settings;
+using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -47,6 +47,7 @@ namespace MobileDeliveryMVVM.ViewModel
             get { return dealerNo; }
             set { SetProperty<int>(ref dealerNo, value); }
         }
+
         int lineCount;
         public int LineCount
         {
@@ -54,9 +55,9 @@ namespace MobileDeliveryMVVM.ViewModel
             set { SetProperty<int>(ref lineCount, value); }
         }
 
-        private DelegateCommand _loadCommand;
-        public DelegateCommand LoadCommand
-        { get { return _loadCommand ?? (_loadCommand = new DelegateCommand(OnOrderDetailsLoad)); } }
+        private DelegateCommand _loadOrderDetailsCommand;
+        public DelegateCommand LoadOrderDetailsCommand
+        { get { return _loadOrderDetailsCommand ?? (_loadOrderDetailsCommand = new DelegateCommand(OnOrderDetailsLoad)); } }
 
         bool loadOrderDetailsComplete;
         public bool LoadOrderDetailsComplete
@@ -84,12 +85,21 @@ namespace MobileDeliveryMVVM.ViewModel
             {
                 if (orderdetaildatabase == null)
                 {
-                    orderdetaildatabase = new CacheItem<OrderDetail>(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UMDDB_OrderDetails.db3"));
+                    orderdetaildatabase = new CacheItem<OrderDetail>(Settings.OrderDetailCachePath);
                 }
                 return orderdetaildatabase;
             }
         }
-        public OrderDetailsVM() : base(new UMDAppConfig() { AppName = "OrderDetailsVM" })
+        public OrderDetailsVM() : base(new SocketSettings()
+        {
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "OrderDetailsVM"
+        }, "OrderDetailsVM")
         {
             OrderDetails.CollectionChanged += (s, e) =>
             {
@@ -129,16 +139,22 @@ namespace MobileDeliveryMVVM.ViewModel
         }
         void LoadOrderDetails(OrderDetail ord)
         {
-            List<OrderDetail> ordList = OrderDetailDatabase.GetItems(ord);
+            List<OrderDetail> ordDtlList = OrderDetailDatabase.GetItems(ord);
 
-            if (ordList != null && ordList.Count > 0)
+            if (false && ordDtlList != null && ordDtlList.Count > 0)
             {
                 //Load From Cache
-                AddOrders(ordList);
+                AddOrderDetails(ordDtlList);
             }
             else
             {
-                Request req = new Request() { reqGuid = Guid.NewGuid() };
+                var req = new Request()
+                {
+                    reqGuid = NewGuid(),
+                    LIds = new Dictionary<long, status>(),
+                    LinkMid = new Dictionary<long, List<long>>(),
+                    ChkIds = new Dictionary<long, status>()
+                };
                 dRequests.Add(req.reqGuid, req);
                 orderDetailThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderDetails, id = ord.ManifestId, Stop = ord.DSP_SEQ }, req);
             }
@@ -156,16 +172,16 @@ namespace MobileDeliveryMVVM.ViewModel
             }
 
             OrderDetailDatabase.SaveItem(new OrderDetail(ord));
-            AddOrder(ord);
+            AddOrderDetails(ord);
         }
-        void AddOrders(List<OrderDetail> orders)
+        void AddOrderDetails(List<OrderDetail> orders)
         {
             foreach (var ord in orders)
             {
-                AddOrder(ord.OrderData());
+                AddOrderDetails(ord.OrderData());
             }
         }
-        void AddOrder(OrderDetailsData od)
+        void AddOrderDetails(OrderDetailsData od)
         {
             LineCount++;
             //Order ord = new Order(od);
