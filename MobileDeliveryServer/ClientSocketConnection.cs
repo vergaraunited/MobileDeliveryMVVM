@@ -19,21 +19,21 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
         public ushort Port { get; set; }
         public string name { get; set; }
 
-        public ClientSocketConnection(SocketSettings srvSet, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
-        { Init(srvSet, ref sm, rm); }
+        public ClientSocketConnection(string url, ushort port, string name, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
+        { Init(url, port, name, ref sm, rm); }
 
-        public void Init(SocketSettings srvSet, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
+        public void Init(string url, ushort port, string name, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
         {
-            Url = srvSet.url;
-            Port = srvSet.port;
-            name = srvSet.name;
+            Url = url;
+            Port = port;
+            this.name = name;
 
-            Logger.Info("Client Socket Connection Init: " + name);
+            Logger.Info($"Client Socket Connection Init: {name}");
 
             if (rm == null)
                 rm = new ReceiveMsgDelegate(MsgProcessor.ReceiveMessage);
 
-            srvr = new ClientToServerConnection(srvSet, ref sm, rm);
+            srvr = new ClientToServerConnection(url, port, name, ref sm, rm);
             smsg = new SendMessages(sm);
         }
 

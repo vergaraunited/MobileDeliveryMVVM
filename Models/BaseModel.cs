@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MobileDeliveryGeneral.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading;
 
 namespace MobileDeliveryMVVM.Models
 {
-    public class BaseModel : INotifyPropertyChanged
+    public class BaseModel : BaseData<BaseModel>, INotifyPropertyChanged
     {
         private readonly object _lock = new object();
         private readonly Dictionary<SynchronizationContext, PropertyChangedEventHandler> _handlersWithContext =

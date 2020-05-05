@@ -13,7 +13,7 @@ namespace MobileDeliveryMVVM.BaseClasses
         #region Fields  
         protected Dictionary<Guid, Request> dRequests = new Dictionary<Guid, Request>();
 
-        public BaseViewModel(UMDAppConfig config) : base(config)
+        public BaseViewModel(SocketSettings set, string name) : base(set, name)
         {
             //Settings.Current.LogLevel = config.LogLevel.ToString();
             //Settings.Current.UMDPort = config.srvSet.srvport;

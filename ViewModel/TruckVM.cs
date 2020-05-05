@@ -14,10 +14,12 @@ using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Linq;
 using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Settings;
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
+using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
-    public class TruckVM : BaseViewModel<TruckData>
+    public class TruckVM : BaseViewModel<IMDMMessage>
     {
         int truckcount = 0;     
         public int TRUCKCOUNT { get { return truckcount; } set { SetProperty<int>(ref truckcount, value); } }
@@ -26,7 +28,8 @@ namespace MobileDeliveryMVVM.ViewModel
 
         public DelegateCommand LoadCommand
         { get { return _loadCommand ?? (_loadCommand = new DelegateCommand(OnTrucksLoad)); } }
-        
+
+
         #region fields
         DateTime truckDate;
         bool isSelected = false;
@@ -74,17 +77,26 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
         #region BackgroundWorkers
-        UMBackgroundWorker<TruckData> truckThread;
-        UMBackgroundWorker<TruckData>.ProgressChanged<TruckData> pcTrucks;
+        UMBackgroundWorker<IMDMMessage> truckThread;
+        UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcTrucks;
         #endregion
 
         static CacheItem<Truck> truckdatabase;
 
-        public TruckVM() : base(new UMDAppConfig() { AppName = "TruckVM" })
+        public TruckVM() : base(new SocketSettings()
         {
-            pcTrucks = new UMBackgroundWorker<TruckData>.ProgressChanged<TruckData>(ProcessMessage);
-            truckThread = new UMBackgroundWorker<TruckData>(new UMBackgroundWorker<TruckData>.ProgressChanged<TruckData>(pcTrucks), rm, sm);
-
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "TruckVM"
+        }, "TruckVM")
+        {
+            pcTrucks = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+            truckThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcTrucks), rm, sm);
+                
             Trucks.CollectionChanged += (s, e) =>
             {
                 Trucks = truckData;
@@ -101,12 +113,19 @@ namespace MobileDeliveryMVVM.ViewModel
             {
                 if (truckdatabase == null)
                 {
-                    truckdatabase = new CacheItem<Truck>(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UMDDB_Trucks.db3"));
+                    truckdatabase = new CacheItem<Truck>(Settings.TruckCachePath);
                 }
                 return truckdatabase;
             }
         }
+        public void ReInitialize(object arg)
+        {
+            if (truckThread != null)
+            {
+                TruckDatabase.BackupAndClearAll();
+            }
 
+        }
         void Clear()
         {
             LoadTruckRequestComplete = "";
@@ -150,23 +169,27 @@ namespace MobileDeliveryMVVM.ViewModel
 
         void LoadTrucks(Truck trk, bool bForceLoad = false)
         {
-            List<Truck> trkList = TruckDatabase.GetItems(trk);
-            Request reqInfo = new Request()
-            {
-                reqGuid = Guid.NewGuid(),
-                LIds = new Dictionary<long, status>(),
-                MIds = new Dictionary<long, status>()
-            };
-
-            if (trkList == null || trkList.Count == 0 || bForceLoad)
+            if (trk.Command == eCommand.GenerateManifest)
             {
                 if (truckThread != null)
-                    truckThread.OnStartProcess(new manifestRequest() { command = eCommand.Trucks, date = trk.ShipDate }, reqInfo);
+                {
+                    truckThread.OnStartProcess(new manifestRequest() { command = eCommand.Trucks, date = trk.ShipDate }, new Request()
+                    {
+                        reqGuid = NewGuid(),
+                        LIds = new Dictionary<long, status>(),
+                        LinkMid = new Dictionary<long, List<long>>()
+                    });
+                }
             }
             else
             {
-                //Load From Cache
-                AddTrucks(trkList);
+                List<Truck> trkList = TruckDatabase.GetItems(trk);
+                
+                if ((trkList != null && trkList.Count> 0 ) || bForceLoad)
+                {
+                    //Load From Cache
+                    AddTrucks(trkList);
+                }
             }
         }
 
@@ -194,7 +217,7 @@ namespace MobileDeliveryMVVM.ViewModel
            // await Navigation.PopAsync();
         }
 
-        void ProcessMessage(TruckData trk, Func<byte[], Task> cbsend = null)
+        void ProcessMessage(IMDMMessage trk, Func<byte[], Task> cbsend = null)
         {
             if (trk.Command == eCommand.TrucksLoadComplete)
             {
@@ -204,11 +227,11 @@ namespace MobileDeliveryMVVM.ViewModel
             }
                 
 
-            Truck newtruck = new Truck(trk);
+            Truck newtruck = new Truck((TruckData)trk);
             Truck truck = TruckDatabase.GetItem(newtruck);
             if (truck == null)
                 TruckDatabase.SaveItem(newtruck);
-            AddTruck(trk);
+            AddTruck((TruckData)trk);
         }
         void AddTruck(TruckData td)
         {
