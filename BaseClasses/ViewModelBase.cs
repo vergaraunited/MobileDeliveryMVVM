@@ -1,10 +1,4 @@
 ﻿using MobileDeliveryMVVM.MobileDeliveryServer;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using MobileDeliveryGeneral.Interfaces;                
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using MobileDeliveryGeneral.Settings;
@@ -17,8 +11,8 @@ namespace MobileDeliveryMVVM.BaseClasses
 {
     public abstract class ViewModelBase<T> : Notification where T : IMDMMessage
     {
-        protected ClientSocketConnection winSys;
-        protected ClientSocketConnection umdSrv;
+        protected static ClientSocketConnection winSys;
+        protected static ClientSocketConnection umdSrv;
 
         protected SendMsgDelegate sm;
         protected ReceiveMsgDelegate rm;
@@ -30,32 +24,45 @@ namespace MobileDeliveryMVVM.BaseClasses
         string winurl;
         ushort winport;
         protected int count;
+        SocketSettings socSet;
 
+        ~ViewModelBase() {
+        }
         public ViewModelBase(SocketSettings srvSet, string name)
         {
             if (srvSet != null)
             {
                 this.name = name;
-                InitConnections(srvSet.url, srvSet.port, srvSet.clienturl, srvSet.clientport);
+                InitConnections(srvSet);
                 sm = new SendMsgDelegate(SendMessage);
+                socSet = srvSet;
             }           
         }
 
-        public virtual void InitConnections(string umdurl = "localhost", ushort umdport = 81, string winurl="localhost", ushort winport=8181)
+        //public virtual void InitConnections(string umdurl = "localhost", ushort umdport = 81, string winurl="localhost", ushort winport=8181)
+        public virtual void InitConnections(SocketSettings srvSet)
         {
-            this.umdurl = umdurl;
-            this.umdport = umdport;
-            this.winurl = winurl;
-            this.winport = winport;
-            rm = new ReceiveMsgDelegate(ReceiveMessageCB);
-            //Connect to WinSys Server
-            winSys = new ClientSocketConnection(winurl, winport, name, ref smWinsys, rm);
-            winSys.Connect();
-
-            
-            //Connect to UMD Server
-            umdSrv = new ClientSocketConnection(umdurl, umdport, name, ref smUMDSrv, rm);
-            umdSrv.Connect();
+            if (winSys == null)
+            {
+                this.winurl = srvSet.clienturl; //winurl;
+                this.winport = srvSet.clientport; // winport;
+                rm = new ReceiveMsgDelegate(ReceiveMessageCB);
+                //Connect to WinSys Server
+                winSys = new ClientSocketConnection(srvSet, ref smWinsys, rm);
+                winSys.Connect();
+            }
+            if (umdSrv == null)
+            {
+                this.umdurl = srvSet.url;
+                this.umdport = srvSet.port;
+                //Connect to UMD Server
+                umdSrv = new ClientSocketConnection(srvSet, ref smUMDSrv, rm);
+                umdSrv.Connect();
+            }
+            else
+            {
+                umdSrv.ReInit(ref smUMDSrv);
+            }
         }
 
         public virtual void Clear(object obj) { }
@@ -63,7 +70,8 @@ namespace MobileDeliveryMVVM.BaseClasses
             SettingsModel set = (SettingsModel)obj;
             winSys.Disconnect();
             umdSrv.Disconnect();
-            InitConnections(set.UMDUrl, (ushort)set.UMDPort, set.WinsysUrl, (ushort)set.WinsysPort );
+            //InitConnections(set.UMDUrl, (ushort)set.UMDPort, set.WinsysUrl, (ushort)set.WinsysPort );
+            InitConnections(socSet);
         }
 
         public virtual isaCommand ReceiveMessageCB(isaCommand cmd)
@@ -99,11 +107,18 @@ namespace MobileDeliveryMVVM.BaseClasses
                 case eCommand.Drivers:
                 case eCommand.Stops:
                 case eCommand.Trucks:
-                case eCommand.Orders:
+                case eCommand.OrdersUpload:
                 case eCommand.OrdersLoad:
                 case eCommand.OrderDetails:
+                case eCommand.OrderDetailsComplete:
+                case eCommand.OrderOptions:
+                case eCommand.OrderOptionsComplete:
                 case eCommand.UploadManifest:
+                case eCommand.CompleteOrder:
                 case eCommand.CompleteStop:
+                case eCommand.AccountReceivable:
+                    if (smUMDSrv == null)
+                        InitConnections(socSet);
                     smUMDSrv(cmd);
                     break;
                 default:

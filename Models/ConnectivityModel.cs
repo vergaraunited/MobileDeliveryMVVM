@@ -55,12 +55,16 @@ namespace MobileDeliveryMVVM.Models
 
         protected void InitConnections()
         {
+            SocketSettings srvSet = new SocketSettings();
+
+           // srvSet.
             //Connect to UMD Server
-            umdSrv = new ClientSocketConnection(umdurl, umdport, name + "_ToUMD", ref sm, rm);
+            //umdSrv = new ClientSocketConnection(umdurl, umdport, name + "_ToUMD", ref sm, rm);
+            umdSrv = new ClientSocketConnection(srvSet, ref sm, rm);
             umdSrv.Connect();
 
             //Connect to WinSys Server
-            winSys = new ClientSocketConnection(winurl, winport, name + "_ToWinSys", ref sm, rm);
+            winSys = new ClientSocketConnection(srvSet, ref sm, rm);
             winSys.Connect();
         }
 

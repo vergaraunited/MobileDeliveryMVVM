@@ -158,7 +158,8 @@ namespace MobileDeliveryMVVM.ViewModel
                 {
                     requestId = req.reqGuid.ToByteArray(),
                     command = manUp.command,
-                    bData = manUp.ToArray()
+                    bData = manUp.ToArray(),
+                    id = manUp.id
                 }), req, pmRx);
             }
         }
@@ -229,7 +230,8 @@ namespace MobileDeliveryMVVM.ViewModel
                 case eCommand.CheckManifest:
                 case eCommand.OrderOptions:
                 case eCommand.OrderDetails:
-                case eCommand.Orders:
+                case eCommand.OrdersLoad:
+                case eCommand.ScanFile:
                     manifestMasterThread.ReportProgress(50, new object[] { cmd });
                     break;
                 case eCommand.ManifestLoadComplete:
@@ -506,7 +508,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 //check if there are zero remaining with status Pending
                 // Orders + OrderDetails + ManifestDetails
             }
-            else if (icmd.Command == eCommand.Orders)
+            else if (icmd.Command == eCommand.OrdersLoad)
             {
 
             }
@@ -519,11 +521,11 @@ namespace MobileDeliveryMVVM.ViewModel
             {
                 OrderDetailsData odd = (OrderDetailsData)icmd;
 
-                int wncnt = odd.WIN_CNT;
-                if (wncnt < 0) wncnt = 0;
+                //int wncnt = odd.WIN_CNT;
+                //if (wncnt < 0) wncnt = 0;
 
                 long id = Int64.Parse(odd.MDL_NO.ToString() +
-                        odd.MDL_CNT.ToString() + odd.OPT_NUM.ToString() + wncnt.ToString());
+                        odd.MDL_CNT.ToString() + odd.OPT_NUM.ToString() + odd.ORD_NO.ToString());
 
                 if (!LoadManifestIdComplete.Contains(id.ToString()))
                 {
@@ -638,6 +640,11 @@ namespace MobileDeliveryMVVM.ViewModel
             {
                // TruckData td = (TruckData)icmd;
             }
+            else if (icmd.Command == eCommand.ScanFile)
+            {
+                 ScanFileData sf = (ScanFileData)icmd;
+
+            }
             else if (icmd.Command == eCommand.TrucksLoadComplete)
             {
                // TruckData tdc = (TruckData)icmd;
@@ -713,20 +720,12 @@ namespace MobileDeliveryMVVM.ViewModel
                     mcmd.COUNT = mcnt.COUNT + 1;
                     lock (olock)
                     {
+                       
                         ManifestMaster.Remove(mcnt);
+                        if (mcnt.ManifestId != 0)
+                            mcmd.ManifestId = mcnt.ManifestId;
                         ManifestMaster.Add(mcmd);
                     }
-/*
-                    var mcnt = manifestMasterData.Where(m => m.LINK == mcmd.LINK).FirstOrDefault();
-                    if (mcnt.ManifestId > 0 && mcmd.ManifestId == 0)
-                        return;
-                    mcmd.COUNT = mcnt.COUNT + 1;
-                    lock (olock)
-                    {
-                        ManifestMaster.Remove(mcnt);
-                        ManifestMaster.Add(mcmd);
-                    }
-                    */
                 }
             }
             else if(icmd.GetType() == typeof(ManifestDetailsData))
@@ -743,199 +742,7 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
 
-        //void Add(IMDMMessage icmd)
-        //{
-        //    if (!manifestMasterData.Contains(icmd))
-        //    {
-        //        ROUTECOUNT++;
-        //        icmd.COUNT = 1;
-        //        ManifestMaster.Add(mcmd);
-        //    }
-        //    else
-        //    {
-        //        var mcnt = manifestMasterData.Where(m => m.LINK == mcmd.LINK).FirstOrDefault();
-        //        if (mcnt.ManifestId > 0 && mcmd.ManifestId == 0)
-        //            return;
-        //        mcmd.COUNT = mcnt.COUNT + 1;
-        //        ManifestMaster.Remove(mcnt);
-        //        ManifestMaster.Add(mcmd);
-        //    }
-        //}
-
         private void OnRouteSelected(object arg) { }
-
-        #region oldcode
-        /*
-        if (icmd.Command == eCommand.Manifest)
-        {
-
-            mcmd.status = status.Init;
-            Add(mcmd);
-            //Winsys loading of the Manifest Master update to the original requestId for a ship date
-            Logger.Info($"ManifestVM::Process Message from Winsys: ManifestMaster Query: {mcmd.ToString()}");
-
-            Request valReq;
-            if (dRequests.TryGetValue(mcmd.RequestId, out valReq))
-            {
-                if (!valReq.LIds.ContainsKey(mcmd.LINK))
-                {
-                    Logger.Info($"ManifestVM::Add Init Query link {mcmd.LINK}");
-                    valReq.LIds.Add(mcmd.LINK, status.Init);
-                    LoadManifestIdComplete.Add(mcmd.LINK.ToString());
-                }
-                else
-                {
-                    Logger.Info($"ManifestVM::Update Init to Releasing for link: {mcmd.LINK}");
-                    valReq.LIds[mcmd.LINK] = status.Releasing;
-                }
-            }
-            else
-                Logger.Error($"Request not found, why are we processing an unkniown message? {mcmd.RequestId}");
-
-            //Search the Manifest from the SQL Server to see if it was already released.
-            CheckManifestStatus(mcmd);
-        }
-        else if (mcmd.Command == eCommand.CheckManifest)
-        {
-            mcmd.status = status.Pending;
-            Add(mcmd);
-            Logger.Info($"ManifestVM::Process Message: Check Manifest Result: {mcmd.ToString()}");
-
-            Request valReq;
-            if (dRequests.TryGetValue(mcmd.RequestId, out valReq))
-            {
-
-                if (mcmd.ManifestId != 0)
-                {
-                    mcmd.Command = eCommand.ManifestLoadComplete;
-                    mcmd.status = status.Released;
-                    valReq.LIds[mcmd.LINK] = status.Completed;
-                    if (valReq.LinkMid.ContainsKey(mcmd.LINK))
-                        valReq.LinkMid[mcmd.LINK].Add(mcmd.ManifestId);
-                    else
-                        valReq.LinkMid.Add(mcmd.LINK, new List<long>() { mcmd.ManifestId });
-                }
-                else
-                {
-                    mcmd.Command = eCommand.Manifest;
-                    mcmd.status = status.Uploaded;
-                    if (valReq.LIds.ContainsKey(mcmd.LINK))
-                        valReq.LIds[mcmd.LINK] = status.Completed;
-                    else
-                        valReq.LIds.Add(mcmd.LINK, status.Completed);
-                }
-            }
-            Add(mcmd);
-        }
-        else if (mcmd.Command == eCommand.CheckManifestComplete)
-        {
-            // if the man id exists update otherwise we are done here
-            mcmd.Command = eCommand.ManifestLoadComplete;
-
-            if (LoadManifestIdComplete.Contains(mcmd.LINK.ToString()))
-                LoadManifestIdComplete.Remove(mcmd.LINK.ToString());
-
-            int cnt = 0, mcnt = 0;
-            Request valReq;
-            if (dRequests.TryGetValue(mcmd.RequestId, out valReq))
-            {
-                if (valReq.LinkMid.ContainsKey(mcmd.LINK))
-                    mcmd.status = status.Released;
-
-                //else if (valReq.LIds[mcmd.LINK] == status.Completed)
-                //    mcmd.status = status.Pending;
-                else
-                {
-                    // valReq.LIds[mcmd.LINK] = status.Completed;
-                    mcmd.status = status.Completed;
-                }
-                Add(mcmd);
-                //mcnt = valReq.MIds.Select(a => a).Where(b => b.Value.CompareTo(status.Init) == 0).Count();
-                valReq.ChkIds.Remove(mcmd.LINK);
-                if ((valReq.LIds.Select(a => a).Where(b => b.Value.CompareTo(status.Init) == 0).Count() == 0 ||
-                    valReq.LIds.Count == 0) && valReq.ChkIds.Count == 0)
-                    bTerminateThread = true;
-
-                cnt = valReq.LIds.Select(a => a).Where(b => b.Value.CompareTo(status.Init) == 0).Count();
-                Logger.Info($"ManifestVM::Process Manifest {cnt} PENDING remaining.");
-            }
-
-            if (cnt == 0 && (valReq != null && valReq.ChkIds.Count == 0) && mcnt == 0)
-            {
-                Logger.Info($"ManifestVM::Process Manifest Load Complete May now Terminate Thread.");
-                bTerminateThread = true;
-            }
-
-        }
-        else if (mcmd.Command == eCommand.ManifestLoadComplete)
-        {
-            // mcmd.status = status.Pending;
-            // Add(mcmd);
-            Request valReq;
-            Logger.Info($"ManifestVM::Process Manifest Load Complete Message: {mcmd.ToString()}");
-
-            if (dRequests.TryGetValue(mcmd.RequestId, out valReq))
-            {
-                int cnt = valReq.LIds.Select(a => a).Where(b => b.Value.CompareTo(status.Init) == 0).Count() + valReq.ChkIds.Count();
-
-                if (mcmd.ManifestId == 0 && mcmd.LINK != 0)
-                {
-                    var it = valReq.LIds.Select(b => b).Where(a => a.Key.CompareTo((Int32)mcmd.LINK) == 0).FirstOrDefault();
-
-                    status est = ((KeyValuePair<long, status>)it).Value;
-                    if (est == status.Init)
-                    {
-                        Logger.Info($"ManifestVM::Process Manifest decrementing from {cnt} Inits. Flipping {mcmd.LINK} Request to PENDING.");
-                        valReq.LIds[mcmd.LINK] = status.Pending;
-                    }
-                    else
-                        valReq.LIds[mcmd.LINK] = status.Completed;
-
-                    cnt = valReq.LIds.Select(a => a).Where(b => b.Value.CompareTo(status.Init) == 0).Count() + valReq.ChkIds.Count();
-                    Logger.Info($"ManifestVM::Process Manifest decrementing New Count {cnt} Inits. Flipping {mcmd.LINK} Request to PENDING.");
-                }
-                else if (mcmd.LINK == 0)
-                {
-                    // No trucks found in winsys
-                    Logger.Info($"No truck manifest found for this date {mcmd.SHIP_DTE}!");
-                }
-                else
-                {
-                    Logger.Info($"ManifestVM::Process Manifest Load cnt: {cnt} Complete Terminate Thread.");
-
-                    if (valReq.LIds.ContainsKey(mcmd.LINK))
-                        valReq.LIds.Remove(mcmd.LINK);
-
-                    //if (valReq.MIds.ContainsKey(mcmd.ManifestId))
-                    //    valReq.MIds[mcmd.ManifestId] = status.Uploaded;
-                    //else
-                    //    valReq.MIds.Add(mcmd.ManifestId, status.Uploaded);
-
-                    mcmd.Command = eCommand.ManifestLoadComplete;
-
-                    LoadManifestIdComplete.Add(mcmd.ManifestId.ToString());
-                }
-                cnt = valReq.LIds.Select(a => a).Where(b => b.Value.CompareTo(status.Init) == 0).Count();
-                Logger.Info($"ManifestVM::Process Manifest {cnt} PENDING remaining.");
-
-                if (cnt == 0 && valReq.ChkIds.Count == 0)
-                {
-                    Logger.Info($"ManifestVM::Process Manifest Load Complete May now Terminate Thread.");
-                    bTerminateThread = true;
-                }
-            }
-        }
-        else if (mcmd.Command == eCommand.UploadManifestComplete)
-        {
-            uploadManifestIdComplete.Add(mcmd.ManifestId.ToString());
-        }
-        else
-        {
-            Logger.Error($"Unhandled ManifestMVVM message.");
-        }
-
-        */
-        #endregion
 
     }
 }
