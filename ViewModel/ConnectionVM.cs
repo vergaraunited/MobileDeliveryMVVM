@@ -27,7 +27,7 @@ namespace MobileDeliveryMVVM.ViewModel
             if (smsg != null)
                 sm = smsg;
 
-            connectivityModel = new ConnectivityModel(srv, rm, sm);
+            connectivityModel = new ConnectivityModel(srv.url, srv.port, srv.name, srv.clienturl, srv.clientport, rm, sm);
         }
 
         ~ConnectionVM()

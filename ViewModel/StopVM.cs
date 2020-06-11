@@ -14,6 +14,8 @@ using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Settings;
 using MobileDeliveryGeneral.Threading;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
+using MobileDeliveryGeneral.Interfaces.DataInterfaces;
+using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -31,9 +33,21 @@ namespace MobileDeliveryMVVM.ViewModel
             get { return manifestId; }
             set
             {
-                if (SetProperty<int>(ref manifestId, value))
-                    if (manifestId > 0)
-                        OnStopsLoad(manifestId);
+                //if (
+                SetProperty<int>(ref manifestId, value);
+                //)
+                  //  if (manifestId > 0)
+                    //    OnStopsLoad(manifestId);
+            }
+        }
+
+        DateTime shipDate;
+        public DateTime ShipDate
+        {
+            get { return shipDate; }
+            set
+            {
+                SetProperty<DateTime>(ref shipDate, value);
             }
         }
 
@@ -68,8 +82,8 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
         #region BackgroundWorkers
-        UMBackgroundWorker<StopData> stopThread;
-        UMBackgroundWorker<StopData>.ProgressChanged<StopData> pcStops;
+        UMBackgroundWorker<IMDMMessage> stopThread;
+        UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcStops;
         #endregion
 
         static CacheItem<Stop> stopdatabase;
@@ -79,21 +93,31 @@ namespace MobileDeliveryMVVM.ViewModel
             {
                 if (stopdatabase == null)
                 {
-                    stopdatabase = new CacheItem<Stop>(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UMDDB_Stops.db3"));
+                    stopdatabase = new CacheItem<Stop>(Settings.StopCachePath);
                 }
                 return stopdatabase;
             }
         }
 
-        public StopVM() : base(new UMDAppConfig() { AppName = "StopVM"})
+        public StopVM() : base(new SocketSettings()
+        {
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "StopVM"
+        }, "StopVM")
         {
             Stops.CollectionChanged += (s, e) =>
             {
                 Stops = stopData;
             };
+
             StopSelectedCommand = new DelegateCommand(OnStopSelected);
-            pcStops = new UMBackgroundWorker<StopData>.ProgressChanged<StopData>(ProcessMessage);
-            stopThread = new UMBackgroundWorker<StopData>(new UMBackgroundWorker<StopData>.ProgressChanged<StopData>(pcStops), rm, sm);
+            pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+            stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
         }
         void Clear()
         {
@@ -159,21 +183,21 @@ namespace MobileDeliveryMVVM.ViewModel
         }
         void LoadStops(Stop st, bool bForceLoad = false)
         {
-            List<Stop> stpList = StopDatabase.GetItems(st);
+            //List<Stop> stpList = StopDatabase.GetItems(st);
 
-            if (stpList != null && stpList.Count > 0 && !bForceLoad)
-            {
-                //Load From Cache
-                AddStops(stpList);
-            }
-            else
+            //if (stpList != null && stpList.Count > 0 && !bForceLoad)
+            //{
+            //    //Load From Cache
+            //    AddStops(stpList);
+            //}
+            //else
             {
                 //Fetch from the server
                 Request reqInfo = new Request()
                 {
-                    reqGuid = Guid.NewGuid(),
+                    reqGuid = NewGuid(),
                     LIds = new Dictionary<long, status>(),
-                    MIds = new Dictionary<long, status>()
+                    LinkMid = new Dictionary<long, List<long>>()
                 };
 
                 stopThread.OnStartProcess(new manifestRequest() { command = eCommand.Stops, id = st.ManifestId }, reqInfo);
@@ -183,24 +207,30 @@ namespace MobileDeliveryMVVM.ViewModel
         {
         }
 
-        void ProcessMessage(StopData std, Func<byte[], Task> cbsend = null)
+        void ProcessMessage(IMDMMessage std, Func<byte[], Task> cbsend = null)
         {
             if (std.Command == eCommand.StopsLoadComplete)
             {
                 LoadStopRequestComplete = std.RequestId.ToString();
-                stopThread.CompleteBackgroundWorker(std.RequestId);
-                LoadStopsComplete = true;
+                //stopThread.CompleteBackgroundWorker(std.RequestId);
+                //LoadStopsComplete = true;
                 return;
             }
 
-            AddStop(std);
+            AddStop((StopData)std);
         }
 
         void AddStop(StopData sd)
         {
             //Do we know about this in ther DB?
             var stop = GetStop(sd);
-            var si = new Stop(stop);
+            Stop si;
+            if (stop != null)
+                si = new Stop(stop);
+            else
+                si = new Stop(sd);
+
+
             if (stop != null)
                 stopdatabase.DeleteItem(si);
             //Cache and Add

@@ -11,7 +11,7 @@ namespace MobileDeliveryMVVM.Models
         public int LineNumber { get; set; }
         public long ORD_NO { get; set; }
         public short MODEL { get; set; }
-        public short MDL_NO { get; set; }
+        public string MDL_NO { get; set; }
         public long DLR_NO { get; set; }
         public short OPT_NUM { get; set; }
         public string DESC { get; set; }
@@ -20,15 +20,12 @@ namespace MobileDeliveryMVVM.Models
 
         public OrderOptionsModel(orderOptions mst)
         {
-            ORD_NO = BitConverter.ToInt64(mst.ORD_NO, 0);
-            MDL_NO = BitConverter.ToInt16(mst.MDL_NO, 0);
-
-            MDL_NO = BitConverter.ToInt16(mst.MODEL, 0);
-            OPT_NUM = BitConverter.ToInt16(mst.OPT_NUM, 0);
-            DESC = BitConverter.ToString(mst.DESC, 0, fldsz_DESCOrd);
-            CLR = BitConverter.ToString(mst.CLR, 0, fldsz_CLR);
-            
-            MDL_CNT = BitConverter.ToInt16(mst.MDL_CNT, 0);
+            ORD_NO = mst.ORD_NO;
+            MDL_NO = mst.MDL_NO;
+            OPT_NUM = mst.OPT_NUM;
+            DESC = mst.DESC;
+            CLR = mst.CLR;
+            MDL_CNT = mst.MDL_CNT;
            
         }
         public OrderOptionsModel(orderMaster mst)

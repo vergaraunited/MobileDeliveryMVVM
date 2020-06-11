@@ -5,6 +5,7 @@ using MobileDeliveryMVVM.Command;
 using System.Threading;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using MobileDeliveryGeneral.Data;
+using MobileDeliveryGeneral.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -16,7 +17,16 @@ namespace MobileDeliveryMVVM.ViewModel
         public ICommand ConnectCommand { get; set; }
 
         //static ProgressChanged<ManifestMasterData> main = null;
-        public MainPageVM() : base(new MobileDeliveryGeneral.Settings.UMDAppConfig() { AppName = "MainPageVM" })
+        public MainPageVM() : base(new SocketSettings()
+        {
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "MainPageVM"
+        }, "MainPageVM")
         {
             ViewContext = SynchronizationContext.Current;
         }

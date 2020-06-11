@@ -42,7 +42,16 @@ namespace MobileDeliveryMVVM.ViewModel
 
         #endregion
         
-        public DriverVM() : base(new UMDAppConfig() { AppName = "DriverVM" })
+        public DriverVM() : base(new SocketSettings()
+        {
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "DriverVM"
+        }, "DriverVM")
         {
             LoadDriversCommand = new DelegateCommand(OnDriversLoad);
             Drivers.CollectionChanged += (s, e) =>

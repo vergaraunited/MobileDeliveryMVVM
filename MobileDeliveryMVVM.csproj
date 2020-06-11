@@ -5,7 +5,7 @@
     <Description>MVVM cross platform generic implementation of Control Value bindable behaviors.</Description>
     <RepositoryUrl>https://github.com/vergaraunited/MobileDeliveryMVVM</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageIconUrl>https://unitedwindowmfg.com/wp-content/uploads/2017/02/New-Logo-4.png</PackageIconUrl>
     <Version>1.5.4</Version>
     <Configurations>Debug;Release;Dev</Configurations>
@@ -16,10 +16,19 @@ Cache Stop ID field copy constructor stop vs stopdata.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MobileDeliveryCaching" Version="1.5.2" />
-    <PackageReference Include="MobileDeliveryClient" Version="1.5.3" />
-    <PackageReference Include="MobileDeliverySettings" Version="1.5.1" />
+    <None Remove="MobileDeliveryMVVM.1.5.0.nupkg" />
+    <None Remove="MobileDeliveryMVVM.1.5.0.symbols.nupkg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Xam.Plugins.Settings" Version="3.1.1" />
+    <PackageReference Include="Xamarin.Controls.SignaturePad.Forms" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MobileDeliveryCaching\MobileDeliveryCaching.csproj" />
+    <ProjectReference Include="..\MobileDeliveryClient\MobileDeliveryClient.csproj" />
+    <ProjectReference Include="..\MobileDeliverySettings\MobileDeliverySettings.csproj" />
   </ItemGroup>
 
 <ItemGroup>
@@ -31,9 +40,5 @@ Cache Stop ID field copy constructor stop vs stopdata.</PackageReleaseNotes>
       <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\ReferenceAssemblies\Microsoft\Framework\Xamarin.iOS\v1.0\Xamarin.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
-
-<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-  <Exec Command="nuget restore $(ProjectPath)" />
-</Target>
 
 </Project>
