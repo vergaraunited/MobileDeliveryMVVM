@@ -13,15 +13,12 @@ namespace MobileDeliveryMVVM.Models
         public int LineNumber { get; set; }
         public long ORD_NO { get; set; }
         public string MDL_NO { get; set; }
-        public long DLR_NO { get; set; }
         public short OPT_NUM { get; set; }
         public string DESC { get; set; }
         public string CLR { get; set; }
-        public decimal WIDTH { get; set; }
-        public decimal HEIGHT { get; set; }
         public short MDL_CNT { get; set; }
         public short WIN_CNT { get; set; }
-        public string RTE_CDE { get; set; }
+        public short PAT_POS { get; set; }
 
         public bool IsSelected { get; set; }
 
@@ -32,11 +29,8 @@ namespace MobileDeliveryMVVM.Models
             OPT_NUM = mst.OPT_NUM;
             DESC = mst.DESC;
             CLR = mst.CLR;
-            WIDTH = mst.WIDTH;
-            HEIGHT = mst.HEIGHT;
+            PAT_POS = mst.PAT_POS;
             MDL_CNT = mst.MDL_CNT;
-            WIN_CNT = mst.LINK_WIN_CNT;
-            RTE_CDE = Convert.ToString(mst.TRUCK);
         }
 
         public OrderDetailModel(OrderDetailsData odd)
@@ -46,11 +40,8 @@ namespace MobileDeliveryMVVM.Models
             OPT_NUM = odd.OPT_NUM;
             DESC = odd.DESC;
             CLR = odd.CLR;
-            WIDTH = odd.WIDTH;
-            HEIGHT = odd.HEIGHT;
+            PAT_POS = odd.PAT_POS;
             MDL_CNT = odd.MDL_CNT;
-            WIN_CNT = odd.WIN_CNT;
-            RTE_CDE = odd.RTE_CDE;
         }
 
         public OrderDetailModel(orderMaster mst)

@@ -17,7 +17,7 @@ using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
-    public class OrderDetailsVM : BaseViewModel<OrderDetailsData>
+    public class OrderDetailsVM : BaseViewModel<OrderOptionsData>
     {
         #region properties
 
@@ -47,7 +47,12 @@ namespace MobileDeliveryMVVM.ViewModel
             get { return dealerNo; }
             set { SetProperty<int>(ref dealerNo, value); }
         }
-
+        long ordno;
+        public long ORD_NO
+        {
+            get { return ordno; }
+            set { SetProperty<long>(ref ordno, value); }
+        }
         int lineCount;
         public int LineCount
         {
@@ -67,16 +72,16 @@ namespace MobileDeliveryMVVM.ViewModel
         }
         #endregion
 
-        ObservableCollection<OrderDetailsData> orderDetailData = new ObservableCollection<OrderDetailsData>();
+        ObservableCollection<OrderOptionsData> orderDetailData = new ObservableCollection<OrderOptionsData>();
 
-        public ObservableCollection<OrderDetailsData> OrderDetails
+        public ObservableCollection<OrderOptionsData> OrderDetails
         {
             get { return orderDetailData; }
             set { SetProperty(ref orderDetailData, value); }
         }
         #region BackgroundWorkers
-        UMBackgroundWorker<OrderDetailsData> orderDetailThread;
-        UMBackgroundWorker<OrderDetailsData>.ProgressChanged<OrderDetailsData> pcOrderDetails;
+        UMBackgroundWorker<OrderOptionsData> orderDetailThread;
+        UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData> pcOrderDetails;
         #endregion
         static CacheItem<OrderDetail> orderdetaildatabase;
         public static CacheItem<OrderDetail> OrderDetailDatabase
@@ -106,8 +111,8 @@ namespace MobileDeliveryMVVM.ViewModel
                 OrderDetails = orderDetailData;
             };
 
-            pcOrderDetails = new UMBackgroundWorker<OrderDetailsData>.ProgressChanged<OrderDetailsData>(ProcessMessage);
-            orderDetailThread = new UMBackgroundWorker<OrderDetailsData>(new UMBackgroundWorker<OrderDetailsData>.ProgressChanged<OrderDetailsData>(pcOrderDetails), rm, sm);
+            pcOrderDetails = new UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData>(ProcessMessage);
+            orderDetailThread = new UMBackgroundWorker<OrderOptionsData>(new UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData>(pcOrderDetails), rm, sm);
         }
         void Clear()
         {
@@ -124,7 +129,7 @@ namespace MobileDeliveryMVVM.ViewModel
         public void OnOrderDetailsLoad(object arg)
         {
             // OrdArgs oa = new OrdArgs() { manId = ManifestId, stopNo = DSP_SEQ };
-            OrderDetail oa = new OrderDetail() { ManifestId = ManifestId, DSP_SEQ = DSP_SEQ };
+            OrderDetail oa = new OrderDetail() { ORD_NO=ORD_NO, ManifestId = ManifestId, DSP_SEQ = DSP_SEQ };
 
             if (arg != EventArgs.Empty)
                 oa = (OrderDetail)arg;
@@ -135,7 +140,7 @@ namespace MobileDeliveryMVVM.ViewModel
             Clear();
 
             Logger.Debug("OnOrderDetailsLoad");
-            LoadOrderDetails(new OrderDetail() { DSP_SEQ = oa.DSP_SEQ, ManifestId = oa.ManifestId });
+            LoadOrderDetails(new OrderDetail() { ORD_NO= ORD_NO, DSP_SEQ = oa.DSP_SEQ, ManifestId = oa.ManifestId });
         }
         void LoadOrderDetails(OrderDetail ord)
         {
@@ -156,12 +161,13 @@ namespace MobileDeliveryMVVM.ViewModel
                     ChkIds = new Dictionary<long, status>()
                 };
                 dRequests.Add(req.reqGuid, req);
-                orderDetailThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderDetails, id = ord.ManifestId, Stop = ord.DSP_SEQ }, req);
+                orderDetailThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderDetails, id = ORD_NO }, req);
+                //orderDetailThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderOptions, id = ORD_NO, Stop = ord.DSP_SEQ }, req);
             }
             //umdSrv.SendMessage(req);
         }
 
-        void ProcessMessage(OrderDetailsData ord, Func<byte[], Task> cbsend = null)
+        void ProcessMessage(OrderOptionsData ord, Func<byte[], Task> cbsend = null)
         {
             if (ord.Command == eCommand.OrderDetailsComplete)
             {
@@ -171,27 +177,23 @@ namespace MobileDeliveryMVVM.ViewModel
                 return;
             }
 
-            OrderDetailDatabase.SaveItem(new OrderDetail(ord));
+            //OrderDetailDatabase.SaveItem(new OrderDetail(ord));
             AddOrderDetails(ord);
         }
         void AddOrderDetails(List<OrderDetail> orders)
         {
-            foreach (var ord in orders)
-            {
-                AddOrderDetails(ord.OrderData());
-            }
+            //foreach (var ord in orders)
+            //{
+            //    AddOrderDetails(ord.OrderData());
+            //}
         }
-        void AddOrderDetails(OrderDetailsData od)
+        void AddOrderDetails(OrderOptionsData od)
         {
             LineCount++;
-            //Order ord = new Order(od);
             if (!OrderDetails.Contains(od))
-            {
                 OrderDetails.Add(od);
-            }
             else
             {
-                OrderDetails.Add(od);
                 OrderDetails.Remove(od);
                 OrderDetails.Add(od);
             }

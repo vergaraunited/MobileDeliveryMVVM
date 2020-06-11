@@ -79,7 +79,12 @@ namespace MobileDeliveryMVVM.ViewModel
         public DelegateCommand LoadCommand
         { get { return _loadCommand ?? (_loadCommand = new DelegateCommand(OnOrdersLoad)); } }
 
-        
+
+        private DelegateCommand _closeStopCommand;
+        public DelegateCommand CloseStopCommand
+        { get { return _closeStopCommand ?? (_closeStopCommand = new DelegateCommand(OnCloseStop)); } }
+
+
         bool loadOrdersComplete;
         public bool LoadOrdersComplete
         {
@@ -88,10 +93,10 @@ namespace MobileDeliveryMVVM.ViewModel
         #endregion
 
         ObservableCollection<OrderData> orderData = new ObservableCollection<OrderData>();
-        
+
         public ObservableCollection<OrderData> Orders
         {
-            get { return orderData; } set{ SetProperty(ref orderData, value);}
+            get { return orderData; } set { SetProperty(ref orderData, value); }
         }
 
 
@@ -120,15 +125,15 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
         public OrderVM() : base(new SocketSettings()
-            {
-                url = "localhost",
-                port = 81,
-                srvurl = "localhost",
-                srvport = 81,
-                clienturl = "localhost",
-                clientport = 8181,
-                name = "OrderVM"
-            }, "OrderVM")
+        {
+            url = "localhost",
+            port = 81,
+            srvurl = "localhost",
+            srvport = 81,
+            clienturl = "localhost",
+            clientport = 8181,
+            name = "OrderVM"
+        }, "OrderVM")
         {
             Orders.CollectionChanged += (s, e) =>
             {
@@ -142,12 +147,15 @@ namespace MobileDeliveryMVVM.ViewModel
             pcOrders = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
             orderThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcOrders), rm, sm);
         }
-        void Clear(bool bFullRefresh=false)
+        void Clear(bool bFullRefresh = false)
         {
             loadOrderRequestComplete = "";
             LoadOrdersComplete = false;
             if (orderThread != null)
                 dRequests.Keys.ToList().ForEach(a => orderThread.Reset(a));
+
+            dShippedRequestPending.Clear();
+            dDeliveredRequestPending.Clear();
 
             if (bFullRefresh)
             {
@@ -157,7 +165,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
         }
 
-        public void OnCompleteStop(object arg)
+        public void OnCompleteOrder(object arg)
         {
             if (arg != null)
             {
@@ -170,7 +178,7 @@ namespace MobileDeliveryMVVM.ViewModel
             }
             else
             {
-                var lstSelectedOrders = Orders.Select(a => a).Where(b => b.IsSelected == true && OrderStatus.Delivered.CompareTo(b.Status)!=0).ToList();
+                var lstSelectedOrders = Orders.Select(a => a).Where(b => b.IsSelected == true && OrderStatus.Delivered.CompareTo(b.Status) != 0).ToList();
                 foreach (var mm in lstSelectedOrders)
                 {
                     mm.status = status.Releasing;
@@ -180,39 +188,25 @@ namespace MobileDeliveryMVVM.ViewModel
         }
         void ResetOrder(OrderData ord)
         {
-            ord.prevstate = ord.IsSelected;
+            //bool tprevst = ord.prevstate;
+            //ord.prevstate = ord.IsSelected;
+            //ord.IsSelected = tprevst;
             ord.Command = eCommand.LoadFilesComplete;
             //AddOrder(ord);
         }
+        List<long> dDeliveredRequestPending = new List<long>();
+        List<long> dShippedRequestPending = new List<long>();
+
         void UploadOrderData(OrderData ord)
         {
             Logger.Info($"OrderVM UploadStopOrder: {ord.ToString()}");
-            OrderData od = null;
-            if (Orders.Contains(ord))
-                foreach (var odi in Orders.Select(a => a).Where(o => o == ord))
-                    od = odi;
+            bool bExists = Orders.Select(a => a).Where(o => o == ord).ToList().Count>0;
+            bool bCompExists = CompletedOrders.Select(a => a).Where(o => o == ord).ToList().Count > 0;
 
-            if (ord.status == status.Pending && od != null && od.IsSelected == true) //|| ord.status == status.Pending)
-            {
-                ResetOrder(od);
+            if (((ord.Status == OrderStatus.Shipped && ord.IsSelected==false) && (bExists && !bCompExists) || dDeliveredRequestPending.Contains(ord.ORD_NO)) || (
+                ord.Status == OrderStatus.Delivered && ord.IsSelected) && (!bExists && bCompExists) || dShippedRequestPending.Contains(ord.ORD_NO))
                 return;
-            }
-            if (ord.Status == OrderStatus.Delivered && ord.Command == eCommand.OrdersLoad &&
-                !( (!ord.IsSelected && ord.prevstate) ^ (ord.IsSelected && !ord.prevstate)) )
-            {
-                ResetOrder(ord);
-                return;
-            }
-
-            if ((
-                ((ord.IsSelected && !ord.prevstate) && ord.Status == OrderStatus.Delivered) || 
-                ((!ord.IsSelected && ord.prevstate) && ord.Status == OrderStatus.Shipped )
-                && ord.Command == eCommand.OrdersLoad))
-            {
-                ResetOrder(ord);
-                //return;
-            }
-
+            
             var req = new Request()
             {
                 reqGuid = NewGuid(),
@@ -221,17 +215,25 @@ namespace MobileDeliveryMVVM.ViewModel
                 ChkIds = new Dictionary<long, status>()
             };
             dRequests.Add(req.reqGuid, req);
+            bool bShipped = !ord.IsSelected && ord.prevstate;
+            bool bDelivered = ord.IsSelected && !ord.prevstate;
 
+            if (bShipped)
+            {
+                ord.Status = OrderStatus.Shipped;
+                ord.status = status.Releasing;
+                //ord.IsSelected = false;
+            }
+            else if (bDelivered)
+            { 
+                ord.Status = OrderStatus.Delivered;
+                ord.status = status.Completed;
+            }
             orderMaster ordUp = new orderMaster(ord, ord.ManifestId);
 
-            if (ord.IsSelected && !ord.prevstate)
-                ordUp.Status = OrderStatus.Shipped;
-            else if (!ord.IsSelected && ord.prevstate)
-                ordUp.Status = OrderStatus.Delivered;
-
-            if ((ord.IsSelected && !ord.prevstate) || (!ord.IsSelected && ord.prevstate))
+            if (bShipped || bDelivered)
             {
-                ordUp.command = eCommand.CompleteStop;
+                ordUp.command = eCommand.CompleteOrder;
 
                 ProcessMsgDelegateRXRaw pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
                 Logger.Info($"Upload Sopt Order reqid: {req.reqGuid}");
@@ -241,13 +243,27 @@ namespace MobileDeliveryMVVM.ViewModel
                     command = ordUp.command,
                     bData = ordUp.ToArray()
                 }), req, pmRx);
+
+                lock (olock)
+                {
+                    if (bShipped)
+                        dShippedRequestPending.Add(ord.ORD_NO);
+                    else if (bDelivered)
+                        dDeliveredRequestPending.Add(ord.ORD_NO);
+                }
             }
         }
-
 
         public void ProcessMessage(byte[] bcmd, Func<byte[], Task> cbsend = null)
         { }
 
+        public void OnCloseStop(object arg)
+        {
+            Request req = new Request() { reqGuid = NewGuid() };
+            dRequests.Add(req.reqGuid, req);
+          //  orderThread.OnStartProcess(new manifestRequest() { command = eCommand.CompleteOrder, id = ord.ManifestId, Stop = ord.DSP_SEQ }, req);
+
+        }
         public void OnOrdersLoad(object arg)
         {
             Order oa = new Order(){ ManifestId = ManifestId, DSP_SEQ = DSP_SEQ };
@@ -291,28 +307,11 @@ namespace MobileDeliveryMVVM.ViewModel
             // If we are Completing a stop the SP returns a OrderMasterData object
             if (ord.GetType() == typeof(OrderMasterData))
             {
-                OrderMasterData omd = (OrderMasterData)ord;
-                OrderData od1=null;
-                foreach (OrderData od in Orders.Select(a => a).Where(b => b.ORD_NO == omd.ORD_NO).ToList())
-                {
-                    od1 = od;
-                }
-                if (od1 != null)
-                {
-                    lock (olock)
-                    {
-                        Orders.Remove(od1);
-
-                        Logger.Info($"OrderVM ProcessMessage: replace order in collection {od1.ToString()}");
-                        od1.Status = ((OrderMasterData)ord).Status;
-                        AddOrder(od1);
-                    }
-                }
+                AddOrder(((OrderMasterData)ord).GetOrderData());
             }
             else
             {
                 ord.status = status.Uploaded;
-                //OrderDatabase.SaveItem(new Order(ord));
                 AddOrder((OrderData)ord);
             }
         }
@@ -326,47 +325,83 @@ namespace MobileDeliveryMVVM.ViewModel
             LineCount++;
             lock (olock)
             {
+                List<OrderData> lstOrdData = Orders.Select(a => a).Where(b => b.ORD_NO == od.ORD_NO).ToList();
+                List<OrderData> lstCompOrdData = CompletedOrders.Select(a => a).Where(b => b.ORD_NO == od.ORD_NO).ToList();
+
+                OrderData tmpod = null;
+
+                if (lstOrdData.Count > 0)
+                    tmpod = lstOrdData[0];
+                else if (lstCompOrdData.Count > 0)
+                    tmpod = lstCompOrdData[0];
+
+                foreach (var o in lstOrdData)
+                {
+                    LineCount--;
+                    Orders.Remove(o);
+                }
+                foreach (var c in lstCompOrdData)
+                {
+                    LineCount--;
+                    CompletedOrders.Remove(c);
+                }
+                
                 //OrderDatabase.SaveItem(new Order(od));
 
-                if (!Orders.Contains(od))
+                if (tmpod != null && tmpod.Status == OrderStatus.Delivered)
                 {
-                    if (od.Status != OrderStatus.Delivered)
-                    {
-                        od.status = status.Init;
-                        Orders.Add(od);
-                    }
-                    else
-                    {
-                        if (CompletedOrders.Contains(od))
-                            CompletedOrders.Remove(od);
-                        CompletedOrders.Add(od);
-                    }
-                }
-                else
-                {
-                    Orders.Remove(od);
+                    tmpod.status = status.Completed;
+                    tmpod.IsSelected = true;
+                    CompletedOrders.Add(tmpod);
 
-                    if (od.Status != OrderStatus.Delivered)
+                    if (tmpod.OnSelectionChanged == null)
+                        tmpod.OnSelectionChanged = new OrderData.cmdFireOnSelected(UploadOrderData);
+                }
+                else if (tmpod != null && tmpod.Status == OrderStatus.Shipped)
+                {
+                    tmpod.status = status.Completed;
+                    tmpod.IsSelected = false;
+                    Orders.Add(tmpod);
+
+                    if (tmpod.OnSelectionChanged == null)
+                        tmpod.OnSelectionChanged = new OrderData.cmdFireOnSelected(UploadOrderData);
+                }
+                else //add to orders - new item
+                {
+                    if (od.Status == OrderStatus.Shipped)
                     {
-                        od.status = status.Init;
+                        od.status = status.Completed;
+                        od.IsSelected = false;
                         Orders.Add(od);
+                    }
+                    else if (od.Status == OrderStatus.Delivered)
+                    {
+                        od.status = status.Completed;
+                        od.IsSelected = true;
+                        CompletedOrders.Add(od);
                     }
                     else
                     {
-                        if (CompletedOrders.Contains(od))
-                            CompletedOrders.Remove(od);
                         od.status = status.Completed;
-                        CompletedOrders.Add(od);
+                       // od.Status = OrderStatus.Shipped;
+                        od.IsSelected = false;
+                        Orders.Add(od);
                     }
+                    if (dShippedRequestPending.Contains(od.ORD_NO))
+                        dShippedRequestPending.Remove(od.ORD_NO);
+                    if (dDeliveredRequestPending.Contains(od.ORD_NO))
+                        dDeliveredRequestPending.Remove(od.ORD_NO);
+                    if (od.OnSelectionChanged == null)
+                        od.OnSelectionChanged = new OrderData.cmdFireOnSelected(UploadOrderData);
                 }
-                od.OnSelectionChanged = new OrderData.cmdFireOnSelected(UploadOrderData);
+                
             }
         }
         public override isaCommand ReceiveMessageCB(isaCommand cmd)
         {
             switch (cmd.command)
             {
-                case eCommand.Orders:
+                case eCommand.OrdersUpload:
                 case eCommand.OrdersLoad:
                     orderThread.ReportProgress(50, new object[] { cmd });
                     break;

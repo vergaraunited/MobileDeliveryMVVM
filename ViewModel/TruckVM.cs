@@ -19,7 +19,7 @@ using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
-    public class TruckVM : BaseViewModel<IMDMMessage>
+    public class TruckVM : BaseViewModel<TruckData>
     {
         int truckcount = 0;     
         public int TRUCKCOUNT { get { return truckcount; } set { SetProperty<int>(ref truckcount, value); } }
@@ -239,7 +239,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 Trucks.Add(td);
             else
             {
-                var tcnt = truckData.Where(m => m.Id == td.Id).FirstOrDefault();
+                var tcnt = truckData.Where(m => m.ManifestId == td.ManifestId).FirstOrDefault();
                 Trucks.Remove(tcnt);
                 Trucks.Add(td);
             }
