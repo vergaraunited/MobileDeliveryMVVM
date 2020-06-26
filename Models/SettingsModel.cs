@@ -12,27 +12,33 @@ namespace MobileDeliveryMVVM.Models
     {
        // private Settings settings =  Settings.;
 
-        public string AppName { get { return Settings.AppName; } set { Settings.AppName = value; OnPropertyChanged("AppName"); } }
-        public string LogLevel { get { return Settings.LogLevel; } set { Settings.LogLevel = value; OnPropertyChanged("LogLevel"); } }
-        public string LogPath { get { return Settings.LogPath; } set { Settings.LogPath = value; OnPropertyChanged("LogPath"); } }
-        public string Url { get { return Settings.Url; } set {Settings.Url=value; OnPropertyChanged("Url"); } }
-        public int Port { get { return Settings.Port; } set { Settings.Port = value; OnPropertyChanged("Port"); } }
-        public string WinsysUrl { get {return Settings.WinsysUrl; } set {Settings.WinsysUrl = value; OnPropertyChanged("WinsysUrl"); } }
-        public int WinsysPort { get { return Settings.WinsysPort; } set {Settings.WinsysPort = value; OnPropertyChanged("WinsysPort"); } }
-        public string UMDUrl { get{ return Settings.UMDUrl; } set {Settings.UMDUrl = value; OnPropertyChanged("UMDUrl"); } }
-        public int UMDPort { get { return Settings.UMDPort; } set { Settings.UMDPort = value; OnPropertyChanged("UMDPort"); } }
+        public string AppName { get { return SettingsAPI.AppName; } set { SettingsAPI.AppName = value; OnPropertyChanged("AppName"); } }
+        public string LogLevel { get { return SettingsAPI.LogLevel; } set { SettingsAPI.LogLevel = value; OnPropertyChanged("LogLevel"); } }
+        public string LogPath { get { return SettingsAPI.LogPath; } set { SettingsAPI.LogPath = value; OnPropertyChanged("LogPath"); } }
+        public string Url { get { return SettingsAPI.Url; } set { SettingsAPI.Url=value; OnPropertyChanged("Url"); } }
+        public int Port { get { return SettingsAPI.Port; } set { SettingsAPI.Port = value; OnPropertyChanged("Port"); } }
+        public string WinsysUrl { get {return SettingsAPI.WinsysUrl; } set { SettingsAPI.WinsysUrl = value; OnPropertyChanged("WinsysUrl"); } }
+        public int WinsysPort { get { return SettingsAPI.WinsysPort; } set { SettingsAPI.WinsysPort = value; OnPropertyChanged("WinsysPort"); } }
+        public string UMDUrl { get{ return SettingsAPI.UMDUrl; } set { SettingsAPI.UMDUrl = value; OnPropertyChanged("UMDUrl"); } }
+        public int UMDPort { get { return SettingsAPI.UMDPort; } set { SettingsAPI.UMDPort = value; OnPropertyChanged("UMDPort"); } }
 
         //SQLite Cache file Paths
 
         //trucks
-        public string TruckCachePath { get { return Settings.TruckCachePath; } set { Settings.TruckCachePath = value; OnPropertyChanged("TruckCachePath"); } }
-        public string OrderCachePath { get { return Settings.OrderCachePath; } set { Settings.OrderCachePath = value; OnPropertyChanged("OrderCachePath"); } }
-        public string StopCachePath { get { return Settings.StopCachePath; } set { Settings.StopCachePath = value; OnPropertyChanged("StopCachePath"); } }
-        public string OrderDetailCachePath { get { return Settings.OrderDetailCachePath; } set { Settings.OrderDetailCachePath = value; OnPropertyChanged("OrderDetailCachePath"); } }
+        public string TruckCachePath { get { return SettingsAPI.TruckCachePath; } set { SettingsAPI.TruckCachePath = value; OnPropertyChanged("TruckCachePath"); } }
+        public string OrderCachePath { get { return SettingsAPI.OrderCachePath; } set { SettingsAPI.OrderCachePath = value; OnPropertyChanged("OrderCachePath"); } }
+        public string StopCachePath { get { return SettingsAPI.StopCachePath; } set { SettingsAPI.StopCachePath = value; OnPropertyChanged("StopCachePath"); } }
+        public string OrderDetailCachePath { get { return SettingsAPI.OrderDetailCachePath; } set { SettingsAPI.OrderDetailCachePath = value; OnPropertyChanged("OrderDetailCachePath"); } }
+
+        //   
+        public int KeepAlive { get { return SettingsAPI.KeepAlive; } set { SettingsAPI.KeepAlive = value; OnPropertyChanged("KeepAlive"); } }
+        public int Retry { get { return SettingsAPI.Retry; } set { SettingsAPI.Retry = value; OnPropertyChanged("Retry"); } }
+        public int ReconTimeout { get { return SettingsAPI.ReconTimeout; } set { SettingsAPI.ReconTimeout = value; OnPropertyChanged("ReconTimeout"); } }
+        public int ErrReconTimeout { get { return SettingsAPI.ErrReconTimeout; } set { SettingsAPI.ErrReconTimeout = value; OnPropertyChanged("ErrReconTimeout"); } }
 
 
-        public string SQLConn { get { return Settings.SQLConn; } set { Settings.SQLConn = value; OnPropertyChanged("SQLConn"); } }
-        public MsgTypes.eCommand Command { get { return Settings.Command; } set { Settings.Command = value; OnPropertyChanged("Command"); } }
-        public Guid RequestId { get { return Settings.RequestId; } set { Settings.RequestId = value; OnPropertyChanged("RequestId"); } }
+        public string SQLConn { get { return SettingsAPI.SQLConn; } set { SettingsAPI.SQLConn = value; OnPropertyChanged("SQLConn"); } }
+        public MsgTypes.eCommand Command { get { return SettingsAPI.Command; } set { SettingsAPI.Command = value; OnPropertyChanged("Command"); } }
+        public Guid RequestId { get { return SettingsAPI.RequestId; } set { SettingsAPI.RequestId = value; OnPropertyChanged("RequestId"); } }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using DataCaching.Caching;
-using DataCaching.Data;
 using MobileDeliveryLogger;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
@@ -71,6 +70,9 @@ namespace MobileDeliveryMVVM.ViewModel
             get { return loadStopsComplete; }
             set { SetProperty<bool>(ref loadStopsComplete, value); }
         }
+
+        public OrderModelData OMD { get; set; }
+
         #endregion
 
         public ObservableCollection<StopData> Stops
@@ -81,19 +83,20 @@ namespace MobileDeliveryMVVM.ViewModel
                 SetProperty(ref stopData, value);
             }
         }
+
         #region BackgroundWorkers
         UMBackgroundWorker<IMDMMessage> stopThread;
         UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcStops;
         #endregion
 
-        static CacheItem<Stop> stopdatabase;
-        public static CacheItem<Stop> StopDatabase
+        static CacheItem<StopData> stopdatabase;
+        public static CacheItem<StopData> StopDatabase
         {
             get
             {
                 if (stopdatabase == null)
                 {
-                    stopdatabase = new CacheItem<Stop>(Settings.StopCachePath);
+                    stopdatabase = new CacheItem<StopData>(SettingsAPI.StopCachePath);
                 }
                 return stopdatabase;
             }
@@ -107,7 +110,11 @@ namespace MobileDeliveryMVVM.ViewModel
             srvport = 81,
             clienturl = "localhost",
             clientport = 8181,
-            name = "StopVM"
+            name = "StopVM",
+            errrecontimeout = 60000,
+            keepalive = 60000,
+            recontimeout = 30000,
+            retry = 60000
         }, "StopVM")
         {
             Stops.CollectionChanged += (s, e) =>
@@ -128,27 +135,22 @@ namespace MobileDeliveryMVVM.ViewModel
             stopData.Clear();
         }
 
-        Stop GetStop(StopData stopD)
+        StopData GetStop(StopData stop)
         {
-            var stop = new Stop(stopD);
-
             var info = StopDatabase.GetMapping();
-
-            Stop stp = StopDatabase.GetItem(stop);
+            StopData stp = StopDatabase.GetItem(stop);
             return stp;
         }
 
-        void SaveStop(StopData stopD)
+        void SaveStop(StopData stop)
         {
-            var stop = new Stop(stopD);
             //truck.Date = DateTime.UtcNow;
             StopDatabase.SaveItem(stop);
             //await Navigation.PopAsync();
         }
 
-        void DeleteStop(StopData stopD)
+        void DeleteStop(StopData stop)
         {
-            var stop = new Stop(stopD);
             StopDatabase.DeleteItem(stop);
             // await Navigation.PopAsync();
         }
@@ -167,7 +169,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 mid = (int)arg;
 
             Logger.Debug("OnStopsLoad");
-            LoadStops(new Stop() { ManifestId = mid }, bForce);
+            LoadStops(new StopData() { ManifestId = mid }, bForce);
         }
 
         private void OnStopSelected(object arg)
@@ -179,9 +181,9 @@ namespace MobileDeliveryMVVM.ViewModel
                 mid = (int)arg;
 
             Logger.Debug("OnStopSelected - Load ");
-            LoadStops(new Stop() { Id = mid });
+            LoadStops(new StopData() { Id = mid });
         }
-        void LoadStops(Stop st, bool bForceLoad = false)
+        void LoadStops(StopData st, bool bForceLoad = false)
         {
             //List<Stop> stpList = StopDatabase.GetItems(st);
 
@@ -212,8 +214,8 @@ namespace MobileDeliveryMVVM.ViewModel
             if (std.Command == eCommand.StopsLoadComplete)
             {
                 LoadStopRequestComplete = std.RequestId.ToString();
-                //stopThread.CompleteBackgroundWorker(std.RequestId);
-                //LoadStopsComplete = true;
+                stopThread.CompleteBackgroundWorker(std.RequestId);
+                LoadStopsComplete = true;
                 return;
             }
 
@@ -224,17 +226,13 @@ namespace MobileDeliveryMVVM.ViewModel
         {
             //Do we know about this in ther DB?
             var stop = GetStop(sd);
-            Stop si;
-            if (stop != null)
-                si = new Stop(stop);
-            else
-                si = new Stop(sd);
 
+            StopData si = stop==null ? sd : stop;
 
             if (stop != null)
                 stopdatabase.DeleteItem(si);
             //Cache and Add
-            stopdatabase.SaveItem(si);
+            //stopdatabase.SaveItem(si);
 
             if (!Stops.Contains(sd))
                 Stops.Add(sd);
@@ -244,11 +242,11 @@ namespace MobileDeliveryMVVM.ViewModel
                 Stops.Add(sd);
             }
         }
-        void AddStops(List<Stop> stops)
+        void AddStops(List<StopData> stops)
         {
-            foreach (var it in stops)
+            foreach (var stop in stops)
             {
-                AddStop(it.StopData());
+                AddStop(stop);
             }
         }
         public override isaCommand ReceiveMessageCB(isaCommand cmd)
@@ -264,6 +262,14 @@ namespace MobileDeliveryMVVM.ViewModel
                     break;
             }
             return cmd;
+        }
+
+        protected override void Shutdown()
+        {
+            Clear();
+            stopThread.CleanEvents();
+            LoadStopsComplete = true; ;
+            base.Shutdown();
         }
     }
 }

@@ -15,27 +15,29 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
         ClientToServerConnection srvr;
         ReceiveMessages rmsg;
         SendMessages smsg;
-        public string Url { get; set; }
-        public ushort Port { get; set; }
-        public string name { get; set; }
-        SocketSettings sockSet;
+        public string name { get; private set; }
+        public SocketSettings socSet { get; set; }
+        public bool IsConnected {
+            get { return srvr.IsConnected; } private set { } }
 
         public ClientSocketConnection(SocketSettings sockSet, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
         { Init(sockSet, ref sm, rm); }
 
         public void Init(SocketSettings sockSet, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
         {
-            Url = sockSet.url;
-            Port = sockSet.port;
-            name = sockSet.name;
-            this.sockSet = sockSet;
-            Logger.Info($"Client Socket Connection Init: {name}");
+            if (srvr == null)
+            {
+                name = sockSet.name;
+                this.socSet = sockSet;
+                Logger.Info($"Client Socket Connection Init: {name}");
 
-            if (rm == null)
-                rm = new ReceiveMsgDelegate(MsgProcessor.ReceiveMessage);
+                if (rm == null)
+                    rm = new ReceiveMsgDelegate(MsgProcessor.ReceiveMessage);
 
-            srvr = new ClientToServerConnection(sockSet, ref sm, rm);
-            smsg = new SendMessages(sm);
+                srvr = new ClientToServerConnection(sockSet, ref sm, rm);
+                name = srvr.name;
+                smsg = new SendMessages(sm);
+            }
         }
 
         public void ReInit(ref SendMsgDelegate sm)
@@ -50,7 +52,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
 
         public bool Connect()
         {
-            Logger.Info($"Client {name} Socket Connecting to Server ws://{Url}:{Port}.");
+            Logger.Info($"Client {name} Socket Connecting to Server ws://{socSet.srvurl}:{socSet.srvport}.");
             var task = Task.Run(async () => srvr.Connect());
           
             return true;
@@ -58,7 +60,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
 
         public bool Disconnect()
         {
-            Logger.Info($"Client Socket {name} Disconnect from Server ws://{Url}:{Port}.");
+            Logger.Info($"Client Socket {name} Disconnect from Server ws://{socSet.srvurl}:{socSet.srvport}.");
             srvr.Disconnect();
             return true;
         }

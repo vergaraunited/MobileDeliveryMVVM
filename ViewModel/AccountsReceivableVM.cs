@@ -7,6 +7,7 @@ using MobileDeliveryGeneral.Threading;
 using MobileDeliveryLogger;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
+using MobileDeliverySettings.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

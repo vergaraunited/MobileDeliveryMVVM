@@ -1,5 +1,4 @@
 ﻿using DataCaching.Caching;
-using DataCaching.Data;
 using MobileDeliveryLogger;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
@@ -81,7 +80,7 @@ namespace MobileDeliveryMVVM.ViewModel
         UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcTrucks;
         #endregion
 
-        static CacheItem<Truck> truckdatabase;
+        static CacheItem<TruckData> truckdatabase;
 
         public TruckVM() : base(new SocketSettings()
         {
@@ -91,7 +90,11 @@ namespace MobileDeliveryMVVM.ViewModel
             srvport = 81,
             clienturl = "localhost",
             clientport = 8181,
-            name = "TruckVM"
+            name = "TruckVM",
+            errrecontimeout=60000,
+            keepalive=60000,
+            recontimeout = 30000,
+            retry=60000
         }, "TruckVM")
         {
             pcTrucks = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
@@ -107,13 +110,13 @@ namespace MobileDeliveryMVVM.ViewModel
             this.TruckDate = DateTime.Now;
         }
 
-        public static CacheItem<Truck> TruckDatabase
+        public static CacheItem<TruckData> TruckDatabase
         {
             get
             {
                 if (truckdatabase == null)
                 {
-                    truckdatabase = new CacheItem<Truck>(Settings.TruckCachePath);
+                    truckdatabase = new CacheItem<TruckData>(SettingsAPI.TruckCachePath);
                 }
                 return truckdatabase;
             }
@@ -125,6 +128,13 @@ namespace MobileDeliveryMVVM.ViewModel
                 TruckDatabase.BackupAndClearAll();
             }
 
+        }
+
+        protected override void Shutdown()
+        {
+            truckThread.CleanEvents();
+            Clear();
+            base.Shutdown();
         }
         void Clear()
         {
@@ -143,7 +153,7 @@ namespace MobileDeliveryMVVM.ViewModel
             if (arg == null)
                 bForce = true;
 
-            Clear();
+            //Clear();
 
             DateTime dte = TruckDate;
 
@@ -151,7 +161,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 dte = (DateTime)arg;
 
             Logger.Info("OnTrucksLoad");
-            LoadTrucks(new Truck() { ShipDate = dte.ToString("yyyy-MM-dd") }, bForce);
+            LoadTrucks(new TruckData() {  SHIP_DTE = dte.ToBinary() }, bForce);
         }
 
         private void OnTruckSelected(object arg)
@@ -163,17 +173,17 @@ namespace MobileDeliveryMVVM.ViewModel
                 dte = (DateTime)arg;
 
             Logger.Debug("OnTruckSelected - Load ");
-            LoadTrucks(new Truck() { ShipDate = dte.ToString("yyyy-MM-dd") });
+            LoadTrucks(new TruckData() { SHIP_DTE = dte.ToBinary() });
                 //new manifestRequest() { command = eCommand.Trucks, date = dte.Date.ToString("yyyy-MM-dd") });
         }
 
-        void LoadTrucks(Truck trk, bool bForceLoad = false)
+        void LoadTrucks(TruckData trk, bool bForceLoad = false)
         {
-            if (trk.Command == eCommand.GenerateManifest)
+            if (trk.Command == eCommand.Trucks)
             {
                 if (truckThread != null)
                 {
-                    truckThread.OnStartProcess(new manifestRequest() { command = eCommand.Trucks, date = trk.ShipDate }, new Request()
+                    truckThread.OnStartProcess(new manifestRequest() { command = eCommand.Trucks, date = trk.SHIP_DTE.ToString("yyyy-MM-dd") }, new Request()
                     {
                         reqGuid = NewGuid(),
                         LIds = new Dictionary<long, status>(),
@@ -183,9 +193,9 @@ namespace MobileDeliveryMVVM.ViewModel
             }
             else
             {
-                List<Truck> trkList = TruckDatabase.GetItems(trk);
+                List<TruckData> trkList = TruckDatabase.GetItems(trk);
                 
-                if ((trkList != null && trkList.Count> 0 ) || bForceLoad)
+                if (trkList != null && trkList.Count> 0 )
                 {
                     //Load From Cache
                     AddTrucks(trkList);
@@ -193,26 +203,23 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
 
-        public Truck OnGet(TruckData truckD)
+        public TruckData OnGet(TruckData truck)
         {
-            var truck = new Truck(truckD);
             var info = TruckDatabase.GetMapping();
 
-            Truck trk = TruckDatabase.GetItem(truck);
+            TruckData trk = TruckDatabase.GetItem(truck);
             return trk;
         }
 
-        void OnSaveTruckClicked(TruckData truckD)
+        void OnSaveTruckClicked(TruckData truck)
         {
-            var truck = new Truck(truckD);
             //truck.Date = DateTime.UtcNow;
             TruckDatabase.SaveItem(truck);
             //await Navigation.PopAsync();
         }
 
-        void OnDeleteTruckClicked(TruckData truckD)
+        void OnDeleteTruckClicked(TruckData truck)
         {
-            var truck = new Truck(truckD);
             TruckDatabase.DeleteItem(truck);
            // await Navigation.PopAsync();
         }
@@ -226,11 +233,9 @@ namespace MobileDeliveryMVVM.ViewModel
                 return;
             }
                 
-
-            Truck newtruck = new Truck((TruckData)trk);
-            Truck truck = TruckDatabase.GetItem(newtruck);
+            TruckData truck = TruckDatabase.GetItem((TruckData)trk);
             if (truck == null)
-                TruckDatabase.SaveItem(newtruck);
+                TruckDatabase.SaveItem((TruckData)trk);
             AddTruck((TruckData)trk);
         }
         void AddTruck(TruckData td)
@@ -244,11 +249,11 @@ namespace MobileDeliveryMVVM.ViewModel
                 Trucks.Add(td);
             }
         }
-        void AddTrucks(List<Truck> trucks)
+        void AddTrucks(List<TruckData> trucks)
         {
-            foreach (var it in trucks)
+            foreach (var truck in trucks)
             {
-                AddTruck(it.TruckData());
+                AddTruck(truck);
             }
         }
         public override isaCommand ReceiveMessageCB(isaCommand cmd)

@@ -10,14 +10,14 @@ namespace MobileDeliveryMVVM.ViewModel
 {
     public class OrderGroupVM : BaseViewModel<OrderGroupVM>, IMDMMessage
     {
-        OrderDetailsVM _oldOrderVM;
+        OrderOptionsVM _oldOrderVM;
 
-        private ObservableCollection<OrderDetailsVM> items;
-        public ObservableCollection<OrderDetailsVM> Items
+        private ObservableCollection<OrderOptionsVM> items;
+        public ObservableCollection<OrderOptionsVM> Items
         {
             get { return items; }
 
-            set { SetProperty<OrderDetailsVM>(ref items, value); }
+            set { SetProperty<OrderOptionsVM>(ref items, value); }
         }
 
         private void SetProperty<T>(ref ObservableCollection<T> items, ObservableCollection<T> value)
@@ -26,7 +26,7 @@ namespace MobileDeliveryMVVM.ViewModel
         }
 
         public DelegateCommand LoadOrdersCommand { get; set; }
-        public DelegateCommand<OrderDetailsVM> RefreshItemsCommand { get; set; }
+        public DelegateCommand<OrderOptionsVM> RefreshItemsCommand { get; set; }
         public MsgTypes.eCommand Command { get; set; }
         public Guid RequestId { get; set; }
         public status status { get; set; }

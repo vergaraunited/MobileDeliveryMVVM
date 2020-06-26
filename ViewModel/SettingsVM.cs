@@ -3,11 +3,12 @@ using MobileDeliveryMVVM.Command;
 using MobileDeliveryMVVM.Models;
 using MobileDeliverySettings;
 using System;
-using MobileDeliveryGeneral.Settings;
 using Windows.ApplicationModel;
 using DataCaching.Caching;
-using DataCaching.Data;
 using System.IO;
+using MobileDeliveryGeneral.Settings;
+using MobileDeliverySettings.Settings;
+using MobileDeliveryGeneral.Data;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -103,6 +104,60 @@ namespace MobileDeliveryMVVM.ViewModel
                 settings.SQLConn = value;
             } }
 
+        /// timeouts
+        /// ushort ukeepalive;
+        //ushort.TryParse(keepAlive, out ukeepalive);
+        //ushort uretry;
+        //ushort.TryParse(retry, out uretry);
+        //ushort urecontimeout;
+        //ushort.TryParse(recontimeout, out urecontimeout);
+        //ushort uerrrecontimeout;
+        //ushort.TryParse(errrecontimeout, out uerrrecontimeout);
+
+        int keepAlive;
+        public int KeepAlive
+        {
+            get { return settings.KeepAlive; }
+            set
+            {
+                SetProperty<int>(ref keepAlive, value);
+                settings.KeepAlive = value;
+            }
+        }
+
+        int retry;
+        public int Retry
+        {
+            get { return settings.Retry; }
+            set
+            {
+                SetProperty<int>(ref retry, value);
+                settings.Retry = value;
+            }
+        }
+
+        int recontimeout;
+        public int ReconTimeout
+        {
+            get { return settings.ReconTimeout; }
+            set
+            {
+                SetProperty<int>(ref recontimeout, value);
+                settings.ReconTimeout = value;
+            }
+        }
+
+        int errrecontimeout;
+        public int ErrReconTimeout
+        {
+            get { return settings.ErrReconTimeout; }
+            set
+            {
+                SetProperty<int>(ref errrecontimeout, value);
+                settings.ErrReconTimeout = value;
+            }
+        }
+
 
         /// <SQLite>
         /// SQLite cache paths
@@ -160,7 +215,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
         public void ReInitialize(object arg)
         {
-            var truck = new CacheItem<Truck>(Settings.TruckCachePath);
+            var truck = new CacheItem<TruckData>(SettingsAPI.TruckCachePath);
             truck.BackupAndClearAll();
         }
 
@@ -187,7 +242,12 @@ namespace MobileDeliveryMVVM.ViewModel
                     srvport = (ushort)settings.UMDPort,
                     srvurl = settings.UMDUrl,
                     clienturl = settings.WinsysUrl,
-                    clientport = (ushort)settings.WinsysPort
+                    clientport = (ushort)settings.WinsysPort,
+                    retry = 60000,
+                    name = "SettingsVM",
+                    keepalive = 60000,
+                    errrecontimeout = 30000,
+                    recontimeout = 60000
                 },
                 // Version=
                 // winsysFiles
@@ -205,26 +265,31 @@ namespace MobileDeliveryMVVM.ViewModel
             srvport = 81,
             clienturl = "localhost",
             clientport = 8181,
-            name = "SettingsVM"
+            name = "SettingsVM",
+            errrecontimeout = 60000,
+            keepalive = 60000,
+            recontimeout = 30000,
+            retry = 60000
+
         }, "SettingsVM")
         {
         }
         public static UMDAppConfig LoadConfig()
         {
-            string zt = Settings.Url;// set;
+            string zt = SettingsAPI.Url;// set;
 
             var cf = new UMDAppConfig();
             cf.InitSrvSet();
-            cf.AppName = Settings.AppName;
-            cf.LogLevel = (MobileDeliveryLogger.LogLevel)Enum.Parse(typeof(MobileDeliveryLogger.LogLevel), Settings.LogLevel);
-            cf.LogPath = Settings.LogPath;
-            cf.SQLConn = Settings.SQLConn;
-            cf.srvSet.port = (ushort)Settings.Port;
-            cf.srvSet.url = Settings.Url;
-            cf.srvSet.clientport = (ushort)Settings.WinsysPort;
-            cf.srvSet.clienturl = Settings.WinsysUrl;
-            cf.srvSet.srvurl = Settings.UMDUrl;
-            cf.srvSet.srvport = (ushort)Settings.UMDPort;
+            cf.AppName = SettingsAPI.AppName;
+            cf.LogLevel = (MobileDeliveryLogger.LogLevel)Enum.Parse(typeof(MobileDeliveryLogger.LogLevel), SettingsAPI.LogLevel);
+            cf.LogPath = SettingsAPI.LogPath;
+            cf.SQLConn = SettingsAPI.SQLConn;
+            cf.srvSet.port = (ushort)SettingsAPI.Port;
+            cf.srvSet.url = SettingsAPI.Url;
+            cf.srvSet.clientport = (ushort)SettingsAPI.WinsysPort;
+            cf.srvSet.clienturl = SettingsAPI.WinsysUrl;
+            cf.srvSet.srvurl = SettingsAPI.UMDUrl;
+            cf.srvSet.srvport = (ushort)SettingsAPI.UMDPort;
 
             cf.Version = string.Format("Version: {0}.{1}.{2}.{3}",
                     Package.Current.Id.Version.Major,

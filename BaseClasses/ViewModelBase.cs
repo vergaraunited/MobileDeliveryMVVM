@@ -6,6 +6,8 @@ using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
 using MobileDeliveryGeneral.Events;
 using MobileDeliveryMVVM.Models;
+using System;
+using MobileDeliveryGeneral.Definitions;
 
 namespace MobileDeliveryMVVM.BaseClasses
 {
@@ -16,8 +18,8 @@ namespace MobileDeliveryMVVM.BaseClasses
 
         protected SendMsgDelegate sm;
         protected ReceiveMsgDelegate rm;
-        SendMsgDelegate smWinsys;
-        SendMsgDelegate smUMDSrv;
+        static SendMsgDelegate smWinsys;
+        static SendMsgDelegate smUMDSrv;
         string name;
         string umdurl;
         ushort umdport;
@@ -26,7 +28,13 @@ namespace MobileDeliveryMVVM.BaseClasses
         protected int count;
         SocketSettings socSet;
 
-        ~ViewModelBase() {
+        //~ViewModelBase() {
+        //    Shutdown();
+
+        //}
+        protected virtual void Shutdown() {
+            Disconnect();
+            //Shutdown();
         }
         public ViewModelBase(SocketSettings srvSet, string name)
         {
@@ -39,39 +47,69 @@ namespace MobileDeliveryMVVM.BaseClasses
             }           
         }
 
+        virtual public void InitVM() { }
+        virtual public void SendVMMesssage(manifestRequest mreq, Request req) { }
+
         //public virtual void InitConnections(string umdurl = "localhost", ushort umdport = 81, string winurl="localhost", ushort winport=8181)
-        public virtual void InitConnections(SocketSettings srvSet)
+        public virtual void InitConnections(SocketSettings srvSet, Boolean bForceWin = false, Boolean bForceUmd = false)
         {
-            if (winSys == null)
+            Disconnect();
+
+            if (winSys == null || bForceWin || rm == null)
             {
-                this.winurl = srvSet.clienturl; //winurl;
-                this.winport = srvSet.clientport; // winport;
+                this.winurl = srvSet.clienturl;
+                this.winport = srvSet.clientport;
+                //Set the Server URL and Port to connect to Winsys Server
+                srvSet.url = this.winurl;
+                srvSet.port = this.winport;
                 rm = new ReceiveMsgDelegate(ReceiveMessageCB);
                 //Connect to WinSys Server
                 winSys = new ClientSocketConnection(srvSet, ref smWinsys, rm);
-                winSys.Connect();
+                // winSys.Connect();
             }
-            if (umdSrv == null)
+
+
+
+            if (umdSrv == null || bForceUmd || rm == null)
             {
-                this.umdurl = srvSet.url;
-                this.umdport = srvSet.port;
+                this.umdurl = srvSet.srvurl;
+                this.umdport = srvSet.srvport;
+                srvSet.url = this.umdurl;
+                srvSet.port = this.umdport;
                 //Connect to UMD Server
                 umdSrv = new ClientSocketConnection(srvSet, ref smUMDSrv, rm);
-                umdSrv.Connect();
+                //umdSrv.Connect();
             }
-            else
-            {
-                umdSrv.ReInit(ref smUMDSrv);
-            }
+
+            Connect();
         }
 
+        public void Connect()
+        {
+            Disconnect();
+            if (winSys !=null)
+                if (!winSys.IsConnected)
+                    winSys.Connect();
+            if (umdSrv!=null)
+                if (!umdSrv.IsConnected)
+                    umdSrv.Connect();
+        }
+        public void Disconnect()
+        {
+            if (winSys != null)
+                if (winSys.IsConnected)
+                    winSys.Disconnect();
+            if (umdSrv!=null)
+                if (umdSrv.IsConnected)
+                    umdSrv.Disconnect();
+        }
         public virtual void Clear(object obj) { }
+        public virtual void Clear(bool bForce = false) { }
         public virtual void Refresh(object obj) {
             SettingsModel set = (SettingsModel)obj;
-            winSys.Disconnect();
-            umdSrv.Disconnect();
+            
             //InitConnections(set.UMDUrl, (ushort)set.UMDPort, set.WinsysUrl, (ushort)set.WinsysPort );
-            InitConnections(socSet);
+            InitConnections(socSet, true, true);
         }
 
         public virtual isaCommand ReceiveMessageCB(isaCommand cmd)
@@ -101,9 +139,10 @@ namespace MobileDeliveryMVVM.BaseClasses
             switch (cmd.command)
             {
                 case eCommand.GenerateManifest:
-                case eCommand.LoadFiles:
+                case eCommand.LoadFiles:                
                     smWinsys(cmd);
                     break;
+                case eCommand.ScanFile:
                 case eCommand.Drivers:
                 case eCommand.Stops:
                 case eCommand.Trucks:
@@ -117,8 +156,9 @@ namespace MobileDeliveryMVVM.BaseClasses
                 case eCommand.CompleteOrder:
                 case eCommand.CompleteStop:
                 case eCommand.AccountReceivable:
+                case eCommand.ScanFileComplete:
                     if (smUMDSrv == null)
-                        InitConnections(socSet);
+                        InitConnections(socSet, false, true);
                     smUMDSrv(cmd);
                     break;
                 default:

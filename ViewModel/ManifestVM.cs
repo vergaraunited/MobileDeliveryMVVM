@@ -14,6 +14,7 @@ using MobileDeliveryGeneral.Interfaces;
 using MobileDeliveryLogger;
 using System.ComponentModel;
 using MobileDeliveryGeneral.Settings;
+using MobileDeliverySettings.Settings;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -108,8 +109,16 @@ namespace MobileDeliveryMVVM.ViewModel
             Init();
         }
 
-        public ManifestVM() : base(new SocketSettings() {url="localhost", port=81, srvurl="localhost", srvport=81, clienturl="localhost", clientport=8181,
-            name ="ManifestVM" }, "ManifestVM")
+        public ManifestVM() : base(
+            new SocketSettings()
+            {
+                url ="localhost", port=81, srvurl="localhost", srvport=81, clienturl="localhost", clientport=8181,
+                name ="ManifestVM",
+                errrecontimeout = 60000,
+                keepalive = 60000,
+                recontimeout = 30000,
+                retry = 60000
+            }, "ManifestVM")
         {
             Init();
         }
@@ -242,6 +251,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 case eCommand.OrderDetailsComplete:
                 case eCommand.OrderOptionsComplete:
                 case eCommand.LoadFilesComplete:
+                case eCommand.ScanFileComplete:
                     manifestMasterThread.ReportProgress(100, new object[] { cmd });
                     break;
                 default:

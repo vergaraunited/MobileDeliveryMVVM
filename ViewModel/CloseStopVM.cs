@@ -8,7 +8,6 @@ using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 using System.Threading.Tasks;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
@@ -31,7 +30,12 @@ namespace MobileDeliveryMVVM.ViewModel
             get { return name; }
             set { SetProperty<string>(ref name, value); }
         }
-
+        int manId;
+        public Int32 ManId
+        {
+            get { return manId; }
+            set { SetProperty<int>(ref manId, value); }
+        }
         private DelegateCommand _confirmPODCommand;
         public DelegateCommand ConfirmPODCommand
         { get { return _confirmPODCommand ?? (_confirmPODCommand = new DelegateCommand(OnSavePOD)); } }
@@ -50,14 +54,15 @@ namespace MobileDeliveryMVVM.ViewModel
 
             foreach (var StopOrder in ShippedOrderCollection)
             {
-               // mreq.bData = Signature;
+               //// mreq.bData = Signature;
                 if (mreq.valist == null)
                     mreq.valist = new List<long>();
                 mreq.valist.Add(StopOrder.ORD_NO);
-                mreq.id = StopOrder.ManifestId;
-                //We need the DSP_SEQ from the scnfle ORD_NO List
-                // mreq.DATA = StopOrder.DSP_SEQ;
-               // StopOrder.Status;
+                //mreq.id = StopOrder.MAN_ID;
+                mreq.id = ManId;
+               // //We need the DSP_SEQ from the scnfle ORD_NO List
+               // // mreq.DATA = StopOrder.DSP_SEQ;
+               //// StopOrder.Status;
             }
             mreq.bData = Signature;
             Request reqInfo = new Request()
@@ -71,8 +76,8 @@ namespace MobileDeliveryMVVM.ViewModel
 
         }
 
-        ObservableCollection<OrderData> orders = new ObservableCollection<OrderData>();
-        public ObservableCollection<OrderData> ShippedOrderCollection
+        ObservableCollection<OrderDetailsModelData> orders = new ObservableCollection<OrderDetailsModelData>();
+        public ObservableCollection<OrderDetailsModelData> ShippedOrderCollection
         {
             get { return orders; }
             set
@@ -80,8 +85,8 @@ namespace MobileDeliveryMVVM.ViewModel
                 SetProperty(ref orders, value);
             }
         }
-        ObservableCollection<OrderData> borders = new ObservableCollection<OrderData>();
-        public ObservableCollection<OrderData> BackOrderCollection
+        ObservableCollection<OrderDetailsModelData> borders = new ObservableCollection<OrderDetailsModelData>();
+        public ObservableCollection<OrderDetailsModelData> BackOrderCollection
         {
             get { return borders; }
             set
