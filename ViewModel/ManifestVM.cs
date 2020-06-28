@@ -104,21 +104,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
         object olock =new Object();
 
-        public ManifestVM(UMDAppConfig config) : base(config.srvSet, config.AppName)
-        {
-            Init();
-        }
-
-        public ManifestVM() : base(
-            new SocketSettings()
-            {
-                url ="localhost", port=81, srvurl="localhost", srvport=81, clienturl="localhost", clientport=8181,
-                name ="ManifestVM",
-                errrecontimeout = 60000,
-                keepalive = 60000,
-                recontimeout = 30000,
-                retry = 60000
-            }, "ManifestVM")
+        public ManifestVM() : base()
         {
             Init();
         }

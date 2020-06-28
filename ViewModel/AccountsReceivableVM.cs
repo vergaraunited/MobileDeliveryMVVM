@@ -2,16 +2,13 @@
 using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Interfaces;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliveryGeneral.Threading;
 using MobileDeliveryLogger;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
-using MobileDeliverySettings.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
@@ -40,21 +37,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
         object olock = new Object();
 
-        public AccountsReceivableVM(UMDAppConfig config) : base(config.srvSet, config.AppName)
-        {
-            Init();
-        }
-
-        public AccountsReceivableVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "ARVM"
-        }, "ARVM")
+        public AccountsReceivableVM() : base()
         {
             Init();
         }

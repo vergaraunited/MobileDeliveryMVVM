@@ -8,13 +8,17 @@ using MobileDeliveryGeneral.Events;
 using MobileDeliveryMVVM.Models;
 using System;
 using MobileDeliveryGeneral.Definitions;
+using MobileDeliveryClient.API;
 
 namespace MobileDeliveryMVVM.BaseClasses
 {
-    public abstract class ViewModelBase<T> : Notification where T : IMDMMessage
+    public abstract class ViewModelDataCommunication : Notification
     {
-        protected static ClientSocketConnection winSys;
-        protected static ClientSocketConnection umdSrv;
+        //static ClientSocketConnection winSys;
+        //static ClientSocketConnection umdSrv;
+
+        static ClientToServerConnection winsys;
+        static ClientToServerConnection umdsrv;
 
         protected SendMsgDelegate sm;
         protected ReceiveMsgDelegate rm;
@@ -26,8 +30,7 @@ namespace MobileDeliveryMVVM.BaseClasses
         string winurl;
         ushort winport;
         protected int count;
-        SocketSettings socSet;
-
+        
         //~ViewModelBase() {
         //    Shutdown();
 
@@ -36,15 +39,28 @@ namespace MobileDeliveryMVVM.BaseClasses
             Disconnect();
             //Shutdown();
         }
-        public ViewModelBase(SocketSettings srvSet, string name)
+        SocketSettings GetSettings()
         {
-            if (srvSet != null)
+            return new SocketSettings()
             {
-                this.name = name;
-                InitConnections(srvSet);
-                sm = new SendMsgDelegate(SendMessage);
-                socSet = srvSet;
-            }           
+                url = "localhost",
+                port = 81,
+                srvurl = "localhost",
+                srvport = 81,
+                clienturl = "localhost",
+                clientport = 8181,
+                name = "TruckVM",
+                errrecontimeout = 60000,
+                keepalive = 60000,
+                recontimeout = 30000,
+                retry = 60000
+            };
+        }
+        public ViewModelDataCommunication()
+        {
+           //this.name = name;
+            InitConnections(GetSettings());
+            sm = new SendMsgDelegate(SendMessage);
         }
 
         virtual public void InitVM() { }
@@ -53,9 +69,9 @@ namespace MobileDeliveryMVVM.BaseClasses
         //public virtual void InitConnections(string umdurl = "localhost", ushort umdport = 81, string winurl="localhost", ushort winport=8181)
         public virtual void InitConnections(SocketSettings srvSet, Boolean bForceWin = false, Boolean bForceUmd = false)
         {
-            Disconnect();
+            name = srvSet.name;
 
-            if (winSys == null || bForceWin || rm == null)
+            if (winsys == null || bForceWin || rm == null)
             {
                 this.winurl = srvSet.clienturl;
                 this.winport = srvSet.clientport;
@@ -64,21 +80,17 @@ namespace MobileDeliveryMVVM.BaseClasses
                 srvSet.port = this.winport;
                 rm = new ReceiveMsgDelegate(ReceiveMessageCB);
                 //Connect to WinSys Server
-                winSys = new ClientSocketConnection(srvSet, ref smWinsys, rm);
-                // winSys.Connect();
+                winsys = new ClientToServerConnection(srvSet, ref sm, rm);
             }
 
-
-
-            if (umdSrv == null || bForceUmd || rm == null)
+            if (umdsrv == null || bForceUmd || rm == null)
             {
                 this.umdurl = srvSet.srvurl;
                 this.umdport = srvSet.srvport;
                 srvSet.url = this.umdurl;
                 srvSet.port = this.umdport;
                 //Connect to UMD Server
-                umdSrv = new ClientSocketConnection(srvSet, ref smUMDSrv, rm);
-                //umdSrv.Connect();
+                umdsrv = new ClientToServerConnection(srvSet, ref smUMDSrv, rm);
             }
 
             Connect();
@@ -87,21 +99,21 @@ namespace MobileDeliveryMVVM.BaseClasses
         public void Connect()
         {
             Disconnect();
-            if (winSys !=null)
-                if (!winSys.IsConnected)
-                    winSys.Connect();
-            if (umdSrv!=null)
-                if (!umdSrv.IsConnected)
-                    umdSrv.Connect();
+            if (winsys !=null)
+                if (!winsys.IsConnected)
+                    winsys.Connect();
+            if (umdsrv!=null)
+                if (!umdsrv.IsConnected)
+                    umdsrv.Connect();
         }
         public void Disconnect()
         {
-            if (winSys != null)
-                if (winSys.IsConnected)
-                    winSys.Disconnect();
-            if (umdSrv!=null)
-                if (umdSrv.IsConnected)
-                    umdSrv.Disconnect();
+            if (winsys != null)
+                if (winsys.IsConnected)
+                    winsys.Disconnect();
+            if (umdsrv!=null)
+                if (umdsrv.IsConnected)
+                    umdsrv.Disconnect();
         }
         public virtual void Clear(object obj) { }
         public virtual void Clear(bool bForce = false) { }

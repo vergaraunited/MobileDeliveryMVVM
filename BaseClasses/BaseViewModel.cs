@@ -8,12 +8,12 @@ using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.BaseClasses
 {
-    public class BaseViewModel<D> : ViewModelBase<D> where D : IMDMMessage
+    public abstract class BaseViewModel<D> : ViewModelDataCommunication
     {
         #region Fields  
         protected Dictionary<Guid, Request> dRequests = new Dictionary<Guid, Request>();
 
-        public BaseViewModel(SocketSettings set, string name) : base(set, name)
+        public BaseViewModel() : base()
         {
             //Settings.Current.LogLevel = config.LogLevel.ToString();
             //Settings.Current.UMDPort = config.srvSet.srvport;
