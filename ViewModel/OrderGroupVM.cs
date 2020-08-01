@@ -3,7 +3,6 @@ using System;
 using System.Collections.ObjectModel;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliveryMVVM.BaseClasses;
 
 namespace MobileDeliveryMVVM.ViewModel
@@ -25,22 +24,18 @@ namespace MobileDeliveryMVVM.ViewModel
             //throw new NotImplementedException();
         }
 
+        protected override MsgTypes.isaCommand ReceiveMessage(MsgTypes.isaCommand msg)
+        {
+            throw new NotImplementedException();
+        }
+
         public DelegateCommand LoadOrdersCommand { get; set; }
         public DelegateCommand<OrderOptionsVM> RefreshItemsCommand { get; set; }
         public MsgTypes.eCommand Command { get; set; }
         public Guid RequestId { get; set; }
         public status status { get; set; }
 
-        public OrderGroupVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "OrderGroupVM"
-        }, "OrderGroupVM")
+        public OrderGroupVM() : base()
         { }
     }
 }

@@ -1,28 +1,13 @@
-﻿using MobileDeliveryMVVM.Command;
-using System;
-using System.Collections.Generic;
-using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Interfaces.DataInterfaces;
-using MobileDeliveryGeneral.Settings;
-using MobileDeliverySettings;
+﻿using MobileDeliveryGeneral.Interfaces;
+using MobileDeliveryMVVM.Command;
 
 namespace MobileDeliveryMVVM.BaseClasses
 {
     public abstract class BaseViewModel<D> : ViewModelDataCommunication
     {
         #region Fields  
-        protected Dictionary<Guid, Request> dRequests = new Dictionary<Guid, Request>();
 
-        public BaseViewModel() : base()
-        {
-            //Settings.Current.LogLevel = config.LogLevel.ToString();
-            //Settings.Current.UMDPort = config.srvSet.srvport;
-            //Settings.Current.UMDUrl = config.srvSet.srvurl;
-            //Settings.Current.Url = config.srvSet.url;
-            //Settings.Current.Port = config.srvSet.port;
-            //Settings.Current.WinsysPort = config.srvSet.clientport;
-            //Settings.Current.WinsysUrl = config.srvSet.clienturl;
-        }
+        public BaseViewModel() : base(){ }
 
         private DelegateCommand _refreshCommand;
         private DelegateCommand _cleanupCommand;
@@ -56,7 +41,7 @@ namespace MobileDeliveryMVVM.BaseClasses
         {
             base.Refresh(obj);
         }
-        public override void Clear(object obj)
+        protected override void Clear(object obj)
         {
             base.Clear(obj);
         }

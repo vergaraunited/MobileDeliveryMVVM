@@ -5,21 +5,20 @@ using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Threading.Tasks;
 using MobileDeliveryGeneral.Data;
-using MobileDeliveryGeneral.Threading;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Linq;
-using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Settings;
-using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using MobileDeliverySettings;
+using MobileDeliveryGeneral.Interfaces;
+using System.Threading.Tasks;
+using MobileDeliveryGeneral.Interfaces.Interfaces;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
     public class TruckVM : BaseViewModel<TruckData>
     {
+        ProcessMsgDelegateRXRaw pmRx;
+
         int truckcount = 0;     
         public int TRUCKCOUNT { get { return truckcount; } set { SetProperty<int>(ref truckcount, value); } }
 
@@ -76,29 +75,16 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
         #region BackgroundWorkers
-        UMBackgroundWorker<IMDMMessage> truckThread;
-        UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcTrucks;
+        //UMBackgroundWorker<IMDMMessage> truckThread;
+        //UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcTrucks;
         #endregion
 
         static CacheItem<TruckData> truckdatabase;
 
-        public TruckVM() : base(new SocketSettings()
+        public TruckVM() : base()
         {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "TruckVM",
-            errrecontimeout=60000,
-            keepalive=60000,
-            recontimeout = 30000,
-            retry=60000
-        }, "TruckVM")
-        {
-            pcTrucks = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
-            truckThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcTrucks), rm, sm);
+            //pcTrucks = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+            //truckThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcTrucks), rm, sm);
                 
             Trucks.CollectionChanged += (s, e) =>
             {
@@ -106,9 +92,12 @@ namespace MobileDeliveryMVVM.ViewModel
             };
 
             TruckSelectedCommand = new DelegateCommand(OnTruckSelected);
+            pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
 
             this.TruckDate = DateTime.Now;
         }
+        public void ProcessMessage(byte[] bcmd, Func<byte[], Task> cbsend = null)
+        { }
 
         public static CacheItem<TruckData> TruckDatabase
         {
@@ -121,29 +110,30 @@ namespace MobileDeliveryMVVM.ViewModel
                 return truckdatabase;
             }
         }
-        public void ReInitialize(object arg)
-        {
-            if (truckThread != null)
-            {
-                TruckDatabase.BackupAndClearAll();
-            }
+        //public void ReInitialize(object arg)
+        //{
+        //    if (truckThread != null)
+        //    {
+        //        TruckDatabase.BackupAndClearAll();
+        //    }
 
-        }
+        //}
 
         protected override void Shutdown()
         {
-            truckThread.CleanEvents();
+           // truckThread.CleanEvents();
             Clear();
             base.Shutdown();
         }
-        void Clear()
+        protected override void Clear(bool bForce=false)
         {
             LoadTruckRequestComplete = "";
             LoadTruckIdComplete = 0;
-            if (truckThread != null)
-                dRequests.Keys.ToList().ForEach(a => truckThread.Reset(a));
+            //if (truckThread != null)
+            //    dRequests.Keys.ToList().ForEach(a => truckThread.Reset(a));
 
             TRUCKCOUNT = 0;
+            base.Clear();
             truckData.Clear();
         }
 
@@ -161,7 +151,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 dte = (DateTime)arg;
 
             Logger.Info("OnTrucksLoad");
-            LoadTrucks(new TruckData() {  SHIP_DTE = dte.ToBinary() }, bForce);
+            LoadTrucks(new TruckData() {  SHIP_DTE = dte.Ticks }, bForce);
         }
 
         private void OnTruckSelected(object arg)
@@ -181,15 +171,23 @@ namespace MobileDeliveryMVVM.ViewModel
         {
             if (trk.Command == eCommand.Trucks)
             {
-                if (truckThread != null)
+                //if (truckThread != null)
+                //{
+                //    truckThread.OnStartProcess(new manifestRequest() { command = eCommand.Trucks, date = trk.SHIP_DTE.ToString("yyyy-MM-dd") }, new Request()
+                //    {
+                //        reqGuid = NewGuid(),
+                //        LIds = new Dictionary<long, status>(),
+                //        LinkMid = new Dictionary<long, List<long>>()
+                //    });
+                //}
+
+                StartProcess((new manifestRequest()
                 {
-                    truckThread.OnStartProcess(new manifestRequest() { command = eCommand.Trucks, date = trk.SHIP_DTE.ToString("yyyy-MM-dd") }, new Request()
-                    {
-                        reqGuid = NewGuid(),
-                        LIds = new Dictionary<long, status>(),
-                        LinkMid = new Dictionary<long, List<long>>()
-                    });
-                }
+                    requestId = NewGuid().ToByteArray(),
+                    command = eCommand.Trucks,
+                    date = trk.SHIP_DTE.ToString("yyyy-MM-dd")
+                }), pmRx);
+                //SendMessage((isaCommand)new manifestRequest() { requestId = NewGuid().ToByteArray(), command = eCommand.Trucks, date = trk.SHIP_DTE.ToString("yyyy-MM-dd") });
             }
             else
             {
@@ -223,21 +221,78 @@ namespace MobileDeliveryMVVM.ViewModel
             TruckDatabase.DeleteItem(truck);
            // await Navigation.PopAsync();
         }
-
-        void ProcessMessage(IMDMMessage trk, Func<byte[], Task> cbsend = null)
+        //protected override isaCommand ReceiveMessageWinSys(isaCommand cmd)
+        //{
+        //    switch (cmd.command)
+        //    {
+        //        case eCommand.Trucks:
+        //            Logger.Info("Winsys TPS eCommand.Trucks - ReceiveMessageWinSys.");
+        //            break;
+        //        case eCommand.TrucksLoadComplete:
+        //            Logger.Info("Winsys TPS TrucksLoadComplete - ReceiveMessageWinSys.");
+        //            break;
+        //        default:
+        //            return base.ReceiveMessageWinSys(cmd);
+        //    }
+        //    return cmd;
+        //}
+        /*protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
-            if (trk.Command == eCommand.TrucksLoadComplete)
+            // Default behavior for load files 
+            // Winsys Driver is telling us the TPS Clarion Files for this date are missing 
+            // and need to be copied over.
+            switch (cmd.command)
             {
-                LoadTruckRequestComplete = trk.RequestId.ToString();
-                truckThread.CompleteBackgroundWorker(trk.RequestId);
-                return;
+                case eCommand.Trucks:
+                    //msgThread.bgWorker_DoWork()
+                    trucks trk = (trucks)cmd;
+                    //var td = new TruckData(trk);
+                    //AddTruck(new TruckData(trk));
+                    var ocmd =  new object[] { trk };
+                    base.msgThread.ReportProgress(50, ocmd);
+                   // msgThread.ReportProgress(50, new object[] { cmd });
+
+                    Logger.Error("UMD UMD SQL Server eCommand.Trucks.");
+                    break;
+                case eCommand.TrucksLoadComplete:
+                    Logger.Error("UMD SQL Server TrucksLoadComplete.");
+                    base.msgThread.ReportProgress(100, new object[] { cmd });
+                    break;
+                default:
+                    Logger.Error($"ViewModelBase::ReceiveMessageUMD Command not handled. {cmd.command.ToString()}");
+                    break;
             }
+            return cmd;
+        }*/
+        //protected override void ProcessMessageUMD(IMDMMessage trk, Func<byte[], Task> cbsend = null)
+        //{
+        //    if (trk.Command == eCommand.TrucksLoadComplete)
+        //    {
+        //        LoadTruckRequestComplete = trk.RequestId.ToString();
+        //        //truckThread.CompleteBackgroundWorker(trk.RequestId);
+        //        return;
+        //    }
+
+        //    TruckData truck = TruckDatabase.GetItem((TruckData)trk);
+        //    if (truck == null)
+        //        TruckDatabase.SaveItem((TruckData)trk);
+        //    AddTruck((TruckData)trk);
+        //}
+
+        //void override ProcessMessage(IMDMMessage trk, Func<byte[], Task> cbsend = null)
+        //{
+        //    if (trk.Command == eCommand.TrucksLoadComplete)
+        //    {
+        //        LoadTruckRequestComplete = trk.RequestId.ToString();
+        //        //truckThread.CompleteBackgroundWorker(trk.RequestId);
+        //        return;
+        //    }
                 
-            TruckData truck = TruckDatabase.GetItem((TruckData)trk);
-            if (truck == null)
-                TruckDatabase.SaveItem((TruckData)trk);
-            AddTruck((TruckData)trk);
-        }
+        //    TruckData truck = TruckDatabase.GetItem((TruckData)trk);
+        //    if (truck == null)
+        //        TruckDatabase.SaveItem((TruckData)trk);
+        //    AddTruck((TruckData)trk);
+        //}
         void AddTruck(TruckData td)
         {
             if (!Trucks.Contains(td))
@@ -255,22 +310,6 @@ namespace MobileDeliveryMVVM.ViewModel
             {
                 AddTruck(truck);
             }
-        }
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
-        {
-            switch (cmd.command)
-            {
-                case eCommand.Trucks:
-                    truckThread.ReportProgress(50, new object[] { cmd });
-                    break;
-                case eCommand.TrucksLoadComplete:
-                    truckThread.ReportProgress(100, new object[] { cmd });
-                    break;
-                default:
-                    break;
-
-            }
-            return cmd;
         }
     }
 }

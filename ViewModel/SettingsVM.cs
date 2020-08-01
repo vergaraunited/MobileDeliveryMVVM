@@ -5,10 +5,9 @@ using MobileDeliverySettings;
 using System;
 using Windows.ApplicationModel;
 using DataCaching.Caching;
-using System.IO;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliverySettings.Settings;
 using MobileDeliveryGeneral.Data;
+using MobileDeliveryGeneral.Definitions;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -257,21 +256,7 @@ namespace MobileDeliveryMVVM.ViewModel
             base.Refresh(settings);
         }
 
-        public SettingsVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "SettingsVM",
-            errrecontimeout = 60000,
-            keepalive = 60000,
-            recontimeout = 30000,
-            retry = 60000
-
-        }, "SettingsVM")
+        public SettingsVM() : base()
         {
         }
         public static UMDAppConfig LoadConfig()
@@ -299,20 +284,25 @@ namespace MobileDeliveryMVVM.ViewModel
 
             return cf;
         }
-        public SettingsVM( UMDAppConfig config) : base(config.srvSet, config.AppName)
+
+        protected override MsgTypes.isaCommand ReceiveMessage(MsgTypes.isaCommand msg)
         {
-            //settings = new Settings()
-            //{
-            //    Command = MobileDeliveryGeneral.Definitions.MsgTypes.eCommand.LoadSettings,
-            //    LogLevel = config.LogLevel.ToString(),
-            //    Url = config.srvSet.url,
-            //    Port  = config.srvSet.port,
-            //    UMDUrl = config.srvSet.srvurl,
-            //    UMDPort = config.srvSet.srvport,
-            //    WinsysUrl = config.srvSet.clienturl,
-            //    WinsysPort = config.srvSet.clientport                
-            //};
+            throw new NotImplementedException();
         }
+        //public SettingsVM() : base()
+        //{
+        //    //settings = new Settings()
+        //    //{
+        //    //    Command = MobileDeliveryGeneral.Definitions.MsgTypes.eCommand.LoadSettings,
+        //    //    LogLevel = config.LogLevel.ToString(),
+        //    //    Url = config.srvSet.url,
+        //    //    Port  = config.srvSet.port,
+        //    //    UMDUrl = config.srvSet.srvurl,
+        //    //    UMDPort = config.srvSet.srvport,
+        //    //    WinsysUrl = config.srvSet.clienturl,
+        //    //    WinsysPort = config.srvSet.clientport                
+        //    //};
+        //}
     }
 
 }

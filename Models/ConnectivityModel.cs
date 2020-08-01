@@ -1,10 +1,9 @@
-﻿using MobileDeliveryMVVM.MobileDeliveryServer;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MobileDeliveryGeneral.Interfaces;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliveryGeneral.Utilities;
+using MobileDeliverySettings.Settings;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.Models
@@ -19,8 +18,8 @@ namespace MobileDeliveryMVVM.Models
 
         string winurl;
         ushort winport;
-        ClientSocketConnection winSys;
-        ClientSocketConnection umdSrv;
+        //ClientSocketConnection winSys;
+        //ClientSocketConnection umdSrv;
 
         public enum ConnectState { Connected, Disconnected }
         public ConnectState IsConnectedWinSys { get; set; }
@@ -60,12 +59,12 @@ namespace MobileDeliveryMVVM.Models
            // srvSet.
             //Connect to UMD Server
             //umdSrv = new ClientSocketConnection(umdurl, umdport, name + "_ToUMD", ref sm, rm);
-            umdSrv = new ClientSocketConnection(srvSet, ref sm, rm);
-            umdSrv.Connect();
+            //umdSrv = new ClientSocketConnection(srvSet, ref sm, rm);
+            //umdSrv.Connect();
 
-            //Connect to WinSys Server
-            winSys = new ClientSocketConnection(srvSet, ref sm, rm);
-            winSys.Connect();
+            ////Connect to WinSys Server
+            //winSys = new ClientSocketConnection(srvSet, ref sm, rm);
+            //winSys.Connect();
         }
 
         public void Disconnect()
@@ -76,7 +75,7 @@ namespace MobileDeliveryMVVM.Models
 
                 if (IsConnectedWinSys == ConnectState.Connected)
                 {
-                    winSys.Disconnect();
+                   // winSys.Disconnect();
                     bDis = true;
                     IsConnectedWinSys = ConnectState.Disconnected;
                 }
@@ -84,7 +83,7 @@ namespace MobileDeliveryMVVM.Models
                 if (IsConnectedAPI == ConnectState.Connected)
                 {
                     bDis = true;
-                    umdSrv.Disconnect();
+                    //umdSrv.Disconnect();
                     IsConnectedAPI = ConnectState.Disconnected;
                 }   
 
@@ -95,8 +94,8 @@ namespace MobileDeliveryMVVM.Models
         }
 
         public void Connect() {
-            winSys.Connect();
-            umdSrv.Connect();
+            //winSys.Connect();
+            //umdSrv.Connect();
             IsConnectedWinSys = ConnectState.Connected;
             IsConnectedAPI = ConnectState.Connected;
             OnPropertyChanged();
@@ -104,18 +103,21 @@ namespace MobileDeliveryMVVM.Models
 
         public bool SendMsgWinsys(manifestRequest req)
         {
-            if (IsConnectedWinSys == ConnectState.Connected)
-                return winSys.SendMessage(req);
-            else
-                return winSys.Connect();
+            //if (IsConnectedWinSys == ConnectState.Connected)
+            //    return winSys.SendMessage(req);
+            //else
+            //    return winSys.Connect();
+
+            return false;
 
             
         }
         public bool SendMsgUMDAPI(manifestRequest req)
         {
-            if (IsConnectedAPI == ConnectState.Connected)
-                return umdSrv.SendMessage(req);
-            else return false;
+            //if (IsConnectedAPI == ConnectState.Connected)
+            //    return umdSrv.SendMessage(req);
+            //else
+                return false;
         }
 
         public void Send(isaCommand cmd)

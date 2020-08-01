@@ -6,7 +6,7 @@ using MobileDeliveryGeneral.Data;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using MobileDeliveryLogger;
 using System.Threading.Tasks;
-using MobileDeliveryGeneral.Settings;
+using MobileDeliveryGeneral.Definitions;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -42,16 +42,7 @@ namespace MobileDeliveryMVVM.ViewModel
 
         #endregion
         
-        public DriverVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "DriverVM"
-        }, "DriverVM")
+        public DriverVM() : base()
         {
             LoadDriversCommand = new DelegateCommand(OnDriversLoad);
             Drivers.CollectionChanged += (s, e) =>
@@ -76,7 +67,7 @@ namespace MobileDeliveryMVVM.ViewModel
         }
         public void LoadDrivers(manifestRequest req)
         {
-            winSys.SendMessage(req);
+            SendMessage(req);
         }
 
         void ProcessMessage(DriverData cmd, Func<byte[], Task> cbsend=null)
@@ -102,18 +93,42 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
 
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
+        protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
-            switch (cmd.command)
+            if (cmd.command == eCommand.DriversLoadComplete)
             {
-                case eCommand.Drivers:
-                    ProcessMessage((DriverData)cmd);
-                    break;
-                case eCommand.DriversLoadComplete:
-                    LoadDriversComplete = true;
-                    break;
+                LoadDriversComplete = true;
+                return cmd;
+            }
+            var driver = (DriverData)cmd;
+            if (driverData == null)
+                driverData = new ObservableCollection<DriverData>();
+
+            if (!driverData.Contains(driver))
+            {
+                driverData.Add(driver);
+            }
+            else
+            {
+                driverData.Add(driver);
+                driverData.Remove(driver);
+                driverData.Add(driver);
             }
             return cmd;
         }
+
+        //public override isaCommand ReceiveMessageCB(isaCommand cmd)
+        //{
+        //    switch (cmd.command)
+        //    {
+        //        case eCommand.Drivers:
+        //            ProcessMessage((DriverData)cmd);
+        //            break;
+        //        case eCommand.DriversLoadComplete:
+        //            LoadDriversComplete = true;
+        //            break;
+        //    }
+        //    return cmd;
+        //}
     }
 }

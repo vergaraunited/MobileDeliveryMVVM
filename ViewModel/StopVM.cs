@@ -5,15 +5,10 @@ using MobileDeliveryMVVM.Command;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using MobileDeliveryGeneral.Data;
 using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Settings;
-using MobileDeliveryGeneral.Threading;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
-using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
@@ -85,8 +80,9 @@ namespace MobileDeliveryMVVM.ViewModel
         }
 
         #region BackgroundWorkers
-        UMBackgroundWorker<IMDMMessage> stopThread;
-        UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcStops;
+        //Moved Background Worker (used for communication to the server) to the base class (one socket set instance).
+        //UMBackgroundWorker<IMDMMessage> stopThread;
+        //UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcStops;
         #endregion
 
         static CacheItem<StopData> stopdatabase;
@@ -102,20 +98,7 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
 
-        public StopVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "StopVM",
-            errrecontimeout = 60000,
-            keepalive = 60000,
-            recontimeout = 30000,
-            retry = 60000
-        }, "StopVM")
+        public StopVM() : base()
         {
             Stops.CollectionChanged += (s, e) =>
             {
@@ -123,14 +106,14 @@ namespace MobileDeliveryMVVM.ViewModel
             };
 
             StopSelectedCommand = new DelegateCommand(OnStopSelected);
-            pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
-            stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
+            //pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+            //stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
         }
-        void Clear()
+        protected override void Clear(bool bForce=false)
         {
             LoadStopsComplete = false;
-            if (stopThread != null)
-                dRequests.Keys.ToList().ForEach(a => stopThread.Reset(a));
+            //if (stopThread != null)
+             //   dRequests.Keys.ToList().ForEach(a => stopThread.Reset(a));
             STOPCOUNT = 0;
             stopData.Clear();
         }
@@ -201,26 +184,56 @@ namespace MobileDeliveryMVVM.ViewModel
                     LIds = new Dictionary<long, status>(),
                     LinkMid = new Dictionary<long, List<long>>()
                 };
-
-                stopThread.OnStartProcess(new manifestRequest() { command = eCommand.Stops, id = st.ManifestId }, reqInfo);
+                SendMessage(new manifestRequest() { command = eCommand.Stops, id = st.ManifestId });
+                //stopThread.OnStartProcess(new manifestRequest() { command = eCommand.Stops, id = st.ManifestId }, reqInfo);
             }
         }
         void ProcessMessage(byte[] cmd, Func<byte[], Task> cbsend = null)
         {
         }
-
-        void ProcessMessage(IMDMMessage std, Func<byte[], Task> cbsend = null)
+        protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
-            if (std.Command == eCommand.StopsLoadComplete)
+            switch (cmd.command)
             {
-                LoadStopRequestComplete = std.RequestId.ToString();
-                stopThread.CompleteBackgroundWorker(std.RequestId);
-                LoadStopsComplete = true;
-                return;
+                case eCommand.Stops:
+                    Logger.Info("StopVM eCommand.Stops - ReceiveMessage.");
+                    break;
+                case eCommand.CompleteStop:
+                    Logger.Info("StopVM eCommand.CompleteStop - ReceiveMessage.");
+                    break;
+                default:
+                    Logger.Info("StopVM Unknown command - ReceiveMessage.");
+                    break;
+                    //return base.ReceiveMessage(cmd);
             }
-
-            AddStop((StopData)std);
+            return cmd;
         }
+
+        //        protected override void ProcessMessageUMD(IMDMMessage std, Func<byte[], Task> cbsend = null)
+        //        {
+        //            if (std.Command == eCommand.StopsLoadComplete)
+        //            {
+        //                LoadStopRequestComplete = std.RequestId.ToString();
+        //                //stopThread.CompleteBackgroundWorker(std.RequestId);
+        //                LoadStopsComplete = true;
+        //                return;
+        //            }
+
+        //            AddStop((StopData)std);
+        //        }
+
+        //        protected override void ProcessMessageWinsys(IMDMMessage std, Func<byte[], Task> cbsend = null)
+        //        {
+        //            if (std.Command == eCommand.StopsLoadComplete)
+        //            {
+        //  //              LoadStopRequestComplete = std.RequestId.ToString();
+        //                //stopThread.CompleteBackgroundWorker(std.RequestId);
+        //    //            LoadStopsComplete = true;
+        //                return;
+        //            }
+
+        ////            AddStop((StopData)std);
+        //        }
 
         void AddStop(StopData sd)
         {
@@ -249,25 +262,25 @@ namespace MobileDeliveryMVVM.ViewModel
                 AddStop(stop);
             }
         }
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
-        {
-            switch (cmd.command)
-            {
-                case eCommand.Stops:
-                    stopThread.ReportProgress(50, new object[] { cmd });
-                    break;
-                case eCommand.StopsLoadComplete:
-                    LoadStopsComplete = true;
-                    stopThread.ReportProgress(100, new object[] { cmd });
-                    break;
-            }
-            return cmd;
-        }
+        //public override isaCommand ReceiveMessage(isaCommand cmd)
+        //{
+        //    switch (cmd.command)
+        //    {
+        //        case eCommand.Stops:
+        //            //stopThread.ReportProgress(50, new object[] { cmd });
+        //            break;
+        //        case eCommand.StopsLoadComplete:
+        //            LoadStopsComplete = true;
+        //            //stopThread.ReportProgress(100, new object[] { cmd });
+        //            break;
+        //    }
+        //    return cmd;
+        //}
 
         protected override void Shutdown()
         {
             Clear();
-            stopThread.CleanEvents();
+            //stopThread.CleanEvents();
             LoadStopsComplete = true; ;
             base.Shutdown();
         }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using MobileDeliveryGeneral.Data;
-using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Threading.Tasks;
 using MobileDeliveryGeneral.Threading;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
@@ -13,8 +12,8 @@ using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Interfaces;
 using MobileDeliveryLogger;
 using System.ComponentModel;
-using MobileDeliveryGeneral.Settings;
-using MobileDeliverySettings.Settings;
+using MobileDeliveryGeneral.Interfaces.Interfaces;
+using static MobileDeliveryGeneral.Definitions.MsgTypes;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -111,8 +110,8 @@ namespace MobileDeliveryMVVM.ViewModel
 
         void Init()
         {
-            pcManifestMaster = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
-            manifestMasterThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcManifestMaster), rm, sm);
+        //    pcManifestMaster = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+        //    manifestMasterThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcManifestMaster), rm, sm);
 
             LoadManifestCommand = new DelegateCommand(OnManifestManifestLoad);
             LoadFilesCommand = new DelegateCommand(OnLoadFilesLoad);
@@ -135,27 +134,18 @@ namespace MobileDeliveryMVVM.ViewModel
 
                 Clear();
 
-                var req = new Request()
-                {
-                    reqGuid = mm.RequestId,
-                    LIds = new Dictionary<long, status>(),
-                    LinkMid = new Dictionary<long, List<long>>(),
-                    ChkIds = new Dictionary<long, status>()
-                };
-                dRequests.Add(req.reqGuid, req);
-
                 manifestMaster manUp = new manifestMaster(mm);
                 manUp.command = eCommand.UploadManifest;
 
                 ProcessMsgDelegateRXRaw pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
-                Logger.Info($"Upload Manifest reqie: {req.reqGuid}");
-                manifestMasterThread.OnStartProcess((new manifestRequest()
+                //Logger.Info($"Upload Manifest reqie: {req.reqGuid}");
+                StartProcess((new manifestRequest()
                 {
-                    requestId = req.reqGuid.ToByteArray(),
+                    requestId = manUp.requestId,
                     command = manUp.command,
                     bData = manUp.ToArray(),
                     id = manUp.id
-                }), req, pmRx);
+                }), pmRx);
             }
         }
 
@@ -177,7 +167,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 md.status = status.Pending;
                 Add(md);
                 Logger.Info($"ManifestVM::CheckManifestStatus: {md.ToString()}");
-                bSuccess = umdSrv.SendMessage(new manifestMaster(md));
+                bSuccess = SendMessage(new manifestMaster(md));
             }
             catch (Exception ex) {
                 bSuccess = false;
@@ -214,10 +204,24 @@ namespace MobileDeliveryMVVM.ViewModel
         public void LoadData(manifestRequest req)
         {
             Logger.Info($"ManifestVM::LoadData: {req.ToString()}");
-            winSys.SendMessage(req);
+            SendMessage(req);
         }
-
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
+        //protected virtual isaCommand ReceiveMessage(isaCommand cmd)
+        //{
+        //    switch (cmd.command)
+        //    {
+        //        case eCommand.Manifest:
+        //            Logger.Info($"ManifestVM::ReceiveMessageWinSys: {cmd}");
+        //            break;
+        //        case eCommand.ManifestLoadComplete:
+        //            Logger.Info($"ManifestVM::ReceiveMessageWinSys: {cmd}");
+        //            break;
+        //        default:
+        //            return base.ReceiveMessageWinSys(cmd);
+        //    }
+        //    return cmd;
+        //}
+        protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
             switch (cmd.command)
             {
@@ -227,7 +231,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 case eCommand.OrderDetails:
                 case eCommand.OrdersLoad:
                 case eCommand.ScanFile:
-                    manifestMasterThread.ReportProgress(50, new object[] { cmd });
+                    //manifestMasterThread.ReportProgress(50, new object[] { cmd });
                     break;
                 case eCommand.ManifestLoadComplete:
                 case eCommand.CheckManifestComplete:
@@ -238,7 +242,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 case eCommand.OrderOptionsComplete:
                 case eCommand.LoadFilesComplete:
                 case eCommand.ScanFileComplete:
-                    manifestMasterThread.ReportProgress(100, new object[] { cmd });
+                    //manifestMasterThread.ReportProgress(100, new object[] { cmd });
                     break;
                 default:
                     break;
@@ -246,7 +250,7 @@ namespace MobileDeliveryMVVM.ViewModel
             }
             return cmd;
         }
-        void Clear()
+        protected override void Clear(bool bFroce = false)
         {
             loadManifestRequestComplete = "";
             LoadManifestIdComplete.Clear();
@@ -280,14 +284,15 @@ namespace MobileDeliveryMVVM.ViewModel
                 LinkMid = new Dictionary<long, List<long>>(),
                 ChkIds = new Dictionary<long, status>()
             };
-            dRequests.Add(req.reqGuid, req);
+            //dRequests.Add(req.reqGuid, req);
 
             ProcessMsgDelegateRXRaw pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
+            SendMessage((new manifestRequest() { command = eCommand.LoadFiles }));
 
-            manifestMasterThread.OnStartProcess((new manifestRequest()
-            {
-                command = eCommand.LoadFiles
-                }), req, pmRx);
+            //manifestMasterThread.OnStartProcess((new manifestRequest()
+            //{
+            //    command = eCommand.LoadFiles
+            //    }), req, pmRx);
         }
         public void OnManifestManifestLoad(object arg)
         {
@@ -300,7 +305,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 LinkMid = new Dictionary<long, List<long>>(),
                 ChkIds = new Dictionary<long,status>()
             };
-            dRequests.Add(req.reqGuid, req);
+            //dUMDRequests.Add(req.reqGuid, req);
 
             DateTime dt;
             if (arg == null)
@@ -310,25 +315,32 @@ namespace MobileDeliveryMVVM.ViewModel
 
             ProcessMsgDelegateRXRaw pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
 
-
-            manifestMasterThread.OnStartProcess((new manifestRequest()
+            SendMessage((new manifestRequest()
             {
                 command = eCommand.GenerateManifest,
                 date = dt.ToString("yyyy-MM-dd"),
                 requestId = req.reqGuid.ToByteArray()
-            }), req, pmRx);
+            }));
+
+            //manifestMasterThread.OnStartProcess((new manifestRequest()
+            //{
+            //    command = eCommand.GenerateManifest,
+            //    date = dt.ToString("yyyy-MM-dd"),
+            //    requestId = req.reqGuid.ToByteArray()
+            //}), req, pmRx);
         }
         public void ProcessMessage(byte[] bcmd, Func<byte[], Task> cbsend = null)
-        {}
-
-        public void ProcessMessage(IMDMMessage icmd, Func<byte[], Task> cbsend=null)
-        {
+        { 
             ManifestMasterData mmcmd;
             ManifestDetailsData mdcmd;
             bool bTerminateThread = false;
             Request valReq;
             int cnt=0;
-            IMDMMessage mcmd;
+            ManifestMasterData icmd = new ManifestMasterData();
+
+            /*
+           
+            IMDMMessage icmd = new MsgTypes.Command().FromArray(bcmd);
 
             if (icmd.Command == eCommand.Manifest)
             {
@@ -695,7 +707,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 LoadManifestCompleted = true;
 
             }
-            
+            */
         }
 
         void Add(IMDMMessage icmd)

@@ -8,10 +8,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using MobileDeliveryGeneral.Data;
 using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Threading;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
-using System.Linq;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliverySettings;
 
 namespace MobileDeliveryMVVM.ViewModel
@@ -86,10 +83,13 @@ namespace MobileDeliveryMVVM.ViewModel
             get { return orderOptionData; }
             set { SetProperty(ref orderOptionData, value); }
         }
+        
         #region BackgroundWorkers
+        /*
         UMBackgroundWorker<OrderOptionsData> orderOptionThread;
-        UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData> pcOrderOptions;
+        UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData> pcOrderOptions;*/
         #endregion
+        
         static CacheItem<OrderOptionsData> orderoptionsdatabase;
         public static CacheItem<OrderOptionsData> OrderOptionDatabase
         {
@@ -102,33 +102,24 @@ namespace MobileDeliveryMVVM.ViewModel
                 return orderoptionsdatabase;
             }
         }
-        public OrderOptionsVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "OrderOptionsVM"
-        }, "OrderOptionsVM")
+        public OrderOptionsVM() : base()
         {
             OrderOptions.CollectionChanged += (s, e) =>
             {
                 OrderOptions = orderOptionData;
             };
 
-            pcOrderOptions = new UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData>(ProcessMessage);
-            orderOptionThread = new UMBackgroundWorker<OrderOptionsData>(new UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData>(pcOrderOptions), rm, sm);
+            //pcOrderOptions = new UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData>(ProcessMessage);
+            //orderOptionThread = new UMBackgroundWorker<OrderOptionsData>(new UMBackgroundWorker<OrderOptionsData>.ProgressChanged<OrderOptionsData>(pcOrderOptions), rm, sm);
         }
-        void Clear()
+        protected override void Clear(bool bForce=false)
         {
             LineCount = 0;
             loadOrderOptionRequestComplete = "";
             LoadOrderOptionsComplete = false;
-            if (orderOptionThread != null)
-                dRequests.Keys.ToList().ForEach(a => orderOptionThread.Reset(a));
-
+            //if (orderOptionThread != null)
+            //    dRequests.Keys.ToList().ForEach(a => orderOptionThread.Reset(a));
+            base.Clear(bForce);
             OrderOptions.Clear();
         }
         //class OrdArgs { public int manId { get; set; } public int stopNo { get; set;} public int DSP_SEQ { get; set; } };
@@ -167,9 +158,11 @@ namespace MobileDeliveryMVVM.ViewModel
                     LinkMid = new Dictionary<long, List<long>>(),
                     ChkIds = new Dictionary<long, status>()
                 };
-                dRequests.Add(req.reqGuid, req);
+
+                SendMessage(new manifestRequest() { command = eCommand.OrderOptions, id = ORD_NO });
+                
                 //orderDetailThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderDetails, id = ORD_NO }, req);
-                orderOptionThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderOptions, id = ORD_NO}, req);
+                //orderOptionThread.OnStartProcess(new manifestRequest() { command = eCommand.OrderOptions, id = ORD_NO}, req);
             }
             //umdSrv.SendMessage(req);
         }
@@ -179,7 +172,7 @@ namespace MobileDeliveryMVVM.ViewModel
             if (ord.Command == eCommand.OrderDetailsComplete)
             {
                 LoadOrderOptionRequestComplete = ord.RequestId.ToString();
-                orderOptionThread.CompleteBackgroundWorker(ord.RequestId);
+                //orderOptionThread.CompleteBackgroundWorker(ord.RequestId);
                 LoadOrderOptionsComplete = true;
                 return;
             }
@@ -205,17 +198,17 @@ namespace MobileDeliveryMVVM.ViewModel
                 OrderOptions.Add(od);
             }
         }
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
+        protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
             switch (cmd.command)
             {
                 case eCommand.OrderOptions:
                 case eCommand.OrdersLoad:
-                    orderOptionThread.ReportProgress(50, new object[] { cmd });
+                    //orderOptionThread.ReportProgress(50, new object[] { cmd });
                     break;
                 case eCommand.OrderOptionsComplete:
                     LoadOrderOptionsComplete = true;
-                    orderOptionThread.ReportProgress(100, new object[] { cmd });
+                    //orderOptionThread.ReportProgress(100, new object[] { cmd });
                     break;
                 default:
                     Logger.Debug("OrderOptionsVM::ReceiveMessageCB - Unhandled message.");

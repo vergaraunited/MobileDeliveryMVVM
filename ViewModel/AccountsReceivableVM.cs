@@ -2,6 +2,7 @@
 using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Interfaces;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
+using MobileDeliveryGeneral.Interfaces.Interfaces;
 using MobileDeliveryGeneral.Threading;
 using MobileDeliveryLogger;
 using MobileDeliveryMVVM.BaseClasses;
@@ -31,8 +32,7 @@ namespace MobileDeliveryMVVM.ViewModel
         }
 
         #region BackgroundWorkers
-        UMBackgroundWorker<IMDMMessage> arThread;
-        UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage> pcAR;
+        
         #endregion
 
         object olock = new Object();
@@ -44,8 +44,8 @@ namespace MobileDeliveryMVVM.ViewModel
 
         void Init()
         {
-            pcAR = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
-            arThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcAR), rm, sm);
+            //pcAR = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+            //arThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcAR), rm, sm);
 
             //LoadARCommand = new DelegateCommand(OnInvoiceLoad);
             LoadInvoicesCommand = new DelegateCommand(OnInvoiceLoad);
@@ -95,39 +95,40 @@ namespace MobileDeliveryMVVM.ViewModel
                     LinkMid = new Dictionary<long, List<long>>(),
                     ChkIds = new Dictionary<long, status>()
                 };
-                dRequests.Add(req.reqGuid, req);
+                //dRequests.Add(req.reqGuid, req);
 
                 accountReceivable manUp = new accountReceivable(ard);
                 manUp.command = eCommand.AccountReceivable;
 
                 ProcessMsgDelegateRXRaw pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
                 Logger.Info($"Upload Manifest reqie: {req.reqGuid}");
-                arThread.OnStartProcess((new manifestRequest()
-                {
-                    requestId = req.reqGuid.ToByteArray(),
-                    command = manUp.command,
-                    bData = manUp.ToArray()
-                }), req, pmRx);
+                //arThread.OnStartProcess((new manifestRequest()
+                //{
+                //    requestId = req.reqGuid.ToByteArray(),
+                //    command = manUp.command,
+                //    bData = manUp.ToArray()
+                //}), req, pmRx);
             }
         }
 
         void Clear(Guid key)
         {
-            if (arThread != null && key != Guid.Empty)
-                arThread.Reset(key);
+            base.Clear();
+            //if (arThread != null && key != Guid.Empty)
+            //    arThread.Reset(key);
             InvoiceData.Clear();
-            dRequests.Clear();
+            ////dRequests.Clear();
         }
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
+        protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
             switch (cmd.command)
             {
                 case eCommand.AccountReceivable:
-                    arThread.ReportProgress(50, new object[] { cmd });
+                    msgThread.ReportProgress(50, new object[] { cmd });
                     break;
                 case eCommand.OrdersLoadComplete:
                     //LoadOrdersComplete = true;
-                    arThread.ReportProgress(100, new object[] { cmd });
+                    msgThread.ReportProgress(100, new object[] { cmd });
                     break;
                 default:
                     Logger.Debug("AccountsReceivableVM::ReceiveMessageCB - Unhandled message.");
@@ -135,7 +136,7 @@ namespace MobileDeliveryMVVM.ViewModel
             }
             return cmd;
         }
-        public void ProcessMessage(IMDMMessage icmd, Func<byte[], Task> cbsend = null)
+        public void ProcessMessage(IMDMMessage icmd, IHandler hnd, Action<byte[], Task> cbsend = null)
         {
             AccountsReceivableData odcmd;
 

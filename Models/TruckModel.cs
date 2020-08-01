@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MobileDeliveryMVVM.Models
+﻿namespace MobileDeliveryMVVM.Models
 {
     public class TruckModel
     {

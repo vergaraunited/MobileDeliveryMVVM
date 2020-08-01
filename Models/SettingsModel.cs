@@ -2,9 +2,7 @@
 using System;
 using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
-using Plugin.Settings;
-using Plugin.Settings.Abstractions;
-using MobileDeliveryGeneral.Data;
+using MobileDeliverySettings.Settings;
 
 namespace MobileDeliveryMVVM.Models
 {
@@ -35,10 +33,30 @@ namespace MobileDeliveryMVVM.Models
         public int Retry { get { return SettingsAPI.Retry; } set { SettingsAPI.Retry = value; OnPropertyChanged("Retry"); } }
         public int ReconTimeout { get { return SettingsAPI.ReconTimeout; } set { SettingsAPI.ReconTimeout = value; OnPropertyChanged("ReconTimeout"); } }
         public int ErrReconTimeout { get { return SettingsAPI.ErrReconTimeout; } set { SettingsAPI.ErrReconTimeout = value; OnPropertyChanged("ErrReconTimeout"); } }
+        public int SocketBuffSize { get { return SettingsAPI.SockBuffSize; } set { SettingsAPI.SockBuffSize = value; OnPropertyChanged("SocketBufferSize"); } }
 
 
         public string SQLConn { get { return SettingsAPI.SQLConn; } set { SettingsAPI.SQLConn = value; OnPropertyChanged("SQLConn"); } }
         public MsgTypes.eCommand Command { get { return SettingsAPI.Command; } set { SettingsAPI.Command = value; OnPropertyChanged("Command"); } }
-        public Guid RequestId { get { return SettingsAPI.RequestId; } set { SettingsAPI.RequestId = value; OnPropertyChanged("RequestId"); } }
+        public override Guid RequestId { get { return SettingsAPI.RequestId; } set { SettingsAPI.RequestId = value; OnPropertyChanged("RequestId"); } }
+
+        public SocketSettings SocketSettings()
+        {
+            return new SocketSettings()
+            {
+                clientport = (ushort)Port,
+                clienturl = Url,
+                errrecontimeout = (ushort)ErrReconTimeout,
+                keepalive = (ushort)KeepAlive,
+                name = AppName,
+                port = (ushort)Port,
+                recontimeout = (ushort)ReconTimeout,
+                socketbuffsize = (short)SocketBuffSize,
+                retry = (ushort)Retry,
+                srvport = (ushort)UMDPort,
+                srvurl = UMDUrl,
+                url = Url
+            };
+        }
     }
 }

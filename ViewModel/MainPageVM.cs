@@ -3,9 +3,8 @@ using System.ComponentModel;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
 using System.Threading;
-using MobileDeliveryGeneral.Interfaces.DataInterfaces;
 using MobileDeliveryGeneral.Data;
-using MobileDeliveryGeneral.Settings;
+using MobileDeliveryGeneral.Definitions;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -17,16 +16,7 @@ namespace MobileDeliveryMVVM.ViewModel
         public ICommand ConnectCommand { get; set; }
 
         //static ProgressChanged<ManifestMasterData> main = null;
-        public MainPageVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "MainPageVM"
-        }, "MainPageVM")
+        public MainPageVM() : base()
         {
             ViewContext = SynchronizationContext.Current;
         }
@@ -55,5 +45,9 @@ namespace MobileDeliveryMVVM.ViewModel
             RefreshCanExecutes();
         }
 
+        protected override MsgTypes.isaCommand ReceiveMessage(MsgTypes.isaCommand msg)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

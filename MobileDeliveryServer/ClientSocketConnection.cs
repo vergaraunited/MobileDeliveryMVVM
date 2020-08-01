@@ -1,22 +1,11 @@
-﻿using MobileDeliveryLogger;
-using System.Threading.Tasks;
-using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Interfaces;
-using MobileDeliveryGeneral.Settings;
-using MobileDeliveryGeneral.Utilities;
-using static MobileDeliveryGeneral.Definitions.MsgTypes;
-using MobileDeliveryClient.API;
-using MobileDeliverySettings.Settings;
-using System;
-
-namespace MobileDeliveryMVVM.MobileDeliveryServer
-{
+﻿namespace MobileDeliveryMVVM.MobileDeliveryServer
+{/*
     public class ClientSocketConnection : isaMobileDeliveryClient
     {
         const ushort defPort = 8181;
         //ClientToServerConnection umdsrv;
-        ReceiveMessages rmsg;
-        SendMessages smsg;
+        ReceiveMessages rm;
+        SendMessages sm;
         ClientToServerConnection srv; 
         public string name { get; private set; }
         public SocketSettings socSet { get; set; }
@@ -26,7 +15,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
         public ClientSocketConnection(SocketSettings sockSet, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
         { Init(sockSet, ref sm, rm); }
 
-        public void Init(SocketSettings sockSet, ref SendMsgDelegate sm, ReceiveMsgDelegate rm = null)
+        public void Init(SocketSettings sockSet, ref SendMsgDelegate smd, ReceiveMsgDelegate rmd = null)
         {
             if (srv == null)
             {
@@ -34,23 +23,23 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
                 this.socSet = sockSet;
                 Logger.Info($"Client Socket Connection Init: {name}");
 
-                if (rm == null)
-                    rm = new ReceiveMsgDelegate(MsgProcessor.ReceiveMessage);
+                if (rmd == null)
+                    rmd = new ReceiveMsgDelegate(MsgProcessor.ReceiveMessage);
 
-                srv = new ClientToServerConnection(sockSet, ref sm, rm);
+                srv = new ClientToServerConnection(sockSet, ref smd, rmd);
                 name = srv.name;
-                smsgWinsys = new SendMessages(sm);
+                sm = new SendMessages(smd);
             }
         }
 
-        public void ReInit(ref SendMsgDelegate sm)
+        public void ReInit(ref SendMsgDelegate smd)
         {
-            if (sm == null)
+            if (smd == null)
             {
                 SendMsgDelegate msgSend = new SendMsgDelegate(SendMessage);
-                sm = msgSend;
+                smd = msgSend;
             }
-            smsg = new SendMessages(sm);
+            sm = new SendMessages(smd);
         }
 
         public bool Connect()
@@ -63,7 +52,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
 
         void ConnectToWinsys(UMDAppConfig config, ev_name_hook e)
         {
-            rm = new ReceiveMsgDelegate(ReceiveMessage);
+            var rmd = new ReceiveMsgDelegate(ReceiveMessage);
             //pmRx = new ProcessMsgDelegateRXRaw(HandleClientCmd);
             string AppName = config.AppName;
             Logger.Debug($"{config.AppName} Connection init");
@@ -84,9 +73,9 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
 
         void ConnectToUMDSrv(UMDAppConfig config, ev_name_hook e)
         {
-            rm = new ReceiveMsgDelegate(ReceiveMessage);
+            var rm = new ReceiveMsgDelegate(ReceiveMessage);
             //pmRx = new ProcessMsgDelegateRXRaw(HandleClientCmd);
-            AppName = config.AppName;
+            string AppName = config.AppName;
             Logger.Debug($"{config.AppName} Connection init");
 
             if (config.srvSet == null)
@@ -99,7 +88,7 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
             config.srvSet.url = config.srvSet.clienturl;
             config.srvSet.port = config.srvSet.clientport;
             config.srvSet.name += " as a client To WinSys server.";
-            conn = new ClientToServerConnection(config.srvSet, ref sm, rm, ev);
+            var conn = new ClientToServerConnection(config.srvSet, ref sm, rm, ev);
             conn.Connect();
         }
 
@@ -135,5 +124,5 @@ namespace MobileDeliveryMVVM.MobileDeliveryServer
         {
             return smsg.SendMessage(cmd);
         }
-    }
+    }*/
 }

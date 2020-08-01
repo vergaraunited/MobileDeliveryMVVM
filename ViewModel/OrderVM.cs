@@ -1,5 +1,4 @@
-﻿using DataCaching.Caching;
-using MobileDeliveryLogger;
+﻿using MobileDeliveryLogger;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
 using System;
@@ -8,12 +7,11 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using MobileDeliveryGeneral.Data;
 using MobileDeliveryGeneral.Definitions;
-using MobileDeliveryGeneral.Threading;
 using static MobileDeliveryGeneral.Definitions.MsgTypes;
 using System.Linq;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliveryGeneral.Interfaces;
 using MobileDeliveryMVVM.Models;
+using MobileDeliveryGeneral.Interfaces.Interfaces;
 
 namespace MobileDeliveryMVVM.ViewModel
 {
@@ -259,8 +257,8 @@ namespace MobileDeliveryMVVM.ViewModel
         #endregion
 
         #region BackgroundWorkers
-        UMBackgroundWorker<OrderModelData> orderThread;
-        UMBackgroundWorker<OrderModelData>.ProgressChanged<OrderModelData> pcOrders;
+        //UMBackgroundWorker<OrderModelData> orderThread;
+        //UMBackgroundWorker<OrderModelData>.ProgressChanged<OrderModelData> pcOrders;
         #endregion
 
         //static CacheItem<OrderMasterData> orderdatabase;
@@ -275,20 +273,7 @@ namespace MobileDeliveryMVVM.ViewModel
         //        return orderdatabase;
         //    }
         //}
-        public OrderVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "OrderVM",
-            errrecontimeout = 60000,
-            keepalive = 60000,
-            recontimeout = 30000,
-            retry = 60000
-        }, "OrderVM")
+        public OrderVM() : base()
         {
             //Orders.CollectionChanged += (s, e) =>
             //{
@@ -308,12 +293,11 @@ namespace MobileDeliveryMVVM.ViewModel
             //             select new Grouping<int, Orders>(orderGroup.Key, orderGroup);
             //orderDataGrouped = new ObservableCollection<Grouping<string, OrderModelData>>(sorted);
         }
-        override public void Clear(bool bFullRefresh = false)
+        protected override void Clear(bool bFullRefresh = false)
         {
             loadOrderRequestComplete = "";
             LoadOrdersComplete = false;
-            if (orderThread != null)
-                dRequests.Keys.ToList().ForEach(a => orderThread.Reset(a));
+            base.Clear(bFullRefresh);
 
             dShippedRequestPending.Clear();
             dDeliveredRequestPending.Clear();
@@ -381,17 +365,17 @@ namespace MobileDeliveryMVVM.ViewModel
                 CompletedOrders = completedOrderData;
             };
 
-            pcOrders = new UMBackgroundWorker<OrderModelData>.ProgressChanged<OrderModelData>(ProcessMessage);
-            orderThread = new UMBackgroundWorker<OrderModelData>(new UMBackgroundWorker<OrderModelData>.ProgressChanged<OrderModelData>(pcOrders), rm, sm);
+            //pcOrders = new UMBackgroundWorker<OrderModelData>.ProgressChanged<OrderModelData>(ProcessMessage);
+            //orderThread = new UMBackgroundWorker<OrderModelData>(new UMBackgroundWorker<OrderModelData>.ProgressChanged<OrderModelData>(pcOrders), rm, sm);
             base.InitVM();
         }
         override public void SendVMMesssage(manifestRequest mreq, Request req)
         {
             InitVM();
-            if (orderThread != null)
-            {
-                orderThread.OnStartProcess(mreq, req);
-            }
+            //if (orderThread != null)
+            //{
+            //    orderThread.OnStartProcess(mreq, req);
+            //}
         }
 
         public void OnCompleteOrder(object arg)
@@ -426,7 +410,7 @@ namespace MobileDeliveryMVVM.ViewModel
         public void OnCloseStop(object arg)
         {
             Request req = new Request() { reqGuid = NewGuid() };
-            dRequests.Add(req.reqGuid, req);
+            //dRequests.Add(req.reqGuid, req);
             //SendVMMesssage(new manifestRequest() { command = eCommand.CompleteOrder, id = ord.ManifestId, Stop = ord.DSP_SEQ }, req);
             //  orderThread.OnStartProcess(new manifestRequest() { command = eCommand.CompleteOrder, id = ord.ManifestId, Stop = ord.DSP_SEQ }, req);
 
@@ -472,7 +456,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 LinkMid = new Dictionary<long, List<long>>(),
                 ChkIds = new Dictionary<long, status>()
             };
-            dRequests.Add(req.reqGuid, req);
+            //dRequests.Add(req.reqGuid, req);
             bool bShipped = !ord.IsSelected && ord.prevstate;
             bool bDelivered = ord.IsSelected && !ord.prevstate;
 
@@ -499,13 +483,14 @@ namespace MobileDeliveryMVVM.ViewModel
 
                 ProcessMsgDelegateRXRaw pmRx = new ProcessMsgDelegateRXRaw(ProcessMessage);
                 Logger.Info($"Upload Stop Order reqid: {req.reqGuid}");
-                orderThread.OnStartProcess((new manifestRequest()
+
+                SendMessage((new manifestRequest()
                 {
                     requestId = req.reqGuid.ToByteArray(),
                     command = ordUp.command,
                     bData = ordUp.ToArray()
-                }), req, pmRx);
-
+                }));
+                
                 lock (olock)
                 {
                     if (bShipped)
@@ -515,7 +500,7 @@ namespace MobileDeliveryMVVM.ViewModel
                 }
             }
         }
-
+        //byte[] cmd, Action<byte[], IHandler, Task> cbsend
         public void ProcessMessage(byte[] bcmd, Func<byte[], Task> cbsend = null)
         { }
 
@@ -525,14 +510,14 @@ namespace MobileDeliveryMVVM.ViewModel
             if(ord.Command == eCommand.OrdersLoad)
             {
                 Request req = new Request() { reqGuid = NewGuid() };
-                dRequests.Add(req.reqGuid, req);
+                //dRequests.Add(req.reqGuid, req);
                 SendVMMesssage(new manifestRequest() { command = eCommand.OrdersLoad, id = ManifestId, Stop = DSP_SEQ }, req);
                 //orderThread.OnStartProcess(new manifestRequest() { command = eCommand.OrdersLoad, id = ManifestId, Stop = DSP_SEQ }, req);
             }
         }
         protected override void Shutdown()
         {
-            orderThread.CleanEvents();
+            //orderThread.CleanEvents();
             Clear(true);
             base.Shutdown();
         }
@@ -542,7 +527,7 @@ namespace MobileDeliveryMVVM.ViewModel
             if (ordc.Command == eCommand.OrdersLoadComplete)
             {
                 LoadOrderRequestComplete = ordc.RequestId.ToString();
-                orderThread.CompleteBackgroundWorker(ordc.RequestId);
+                //orderThread.CompleteBackgroundWorker(ordc.RequestId);
                 Logger.Info($"OrdersLoadComplete: {ordc.ToString()}");
                 LoadOrdersComplete = true;
                 return;
@@ -664,19 +649,35 @@ namespace MobileDeliveryMVVM.ViewModel
                 
             }
         }
-        public override isaCommand ReceiveMessageCB(isaCommand cmd)
+        //protected override isaCommand ReceiveMessageWinSys(isaCommand cmd)
+        //{
+        //    switch (cmd.command)
+        //    {
+        //        case eCommand.OrdersLoad:
+        //        case eCommand.OrdersUpload:
+        //            Logger.Info($"Winsys TPS {cmd.command} - ReceiveMessageWinSys.");
+        //            break;
+        //        case eCommand.OrdersLoadComplete:
+        //            Logger.Info("Winsys TPS OrdersLoadComplete - ReceiveMessageWinSys.");
+        //            break;
+        //        default:
+        //            return base.ReceiveMessageWinSys(cmd);
+        //    }
+        //    return cmd;
+        //}
+        protected override isaCommand ReceiveMessage(isaCommand cmd)
         {
             switch (cmd.command)
             {
                 case eCommand.OrdersUpload:
                 case eCommand.OrdersLoad:
                 case eCommand.OrderModel:
-                    orderThread.ReportProgress(50, new object[] { cmd });
+                    //orderThread.ReportProgress(50, new object[] { cmd });
                     break;
                 case eCommand.OrdersLoadComplete:
                // case eCommand.OrderModelComplete:
                     LoadOrdersComplete = true;
-                    orderThread.ReportProgress(100, new object[] { cmd });
+                    //orderThread.ReportProgress(100, new object[] { cmd });
                     break;
                 default:
                     Logger.Debug("OrderVM::ReceiveMessageCB - Unhandled message.");

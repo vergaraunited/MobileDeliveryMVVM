@@ -1,7 +1,6 @@
 ﻿using MobileDeliveryGeneral.Data;
 using MobileDeliveryGeneral.Definitions;
 using MobileDeliveryGeneral.Interfaces.DataInterfaces;
-using MobileDeliveryGeneral.Settings;
 using MobileDeliveryGeneral.Threading;
 using MobileDeliveryMVVM.BaseClasses;
 using MobileDeliveryMVVM.Command;
@@ -76,6 +75,11 @@ namespace MobileDeliveryMVVM.ViewModel
 
         }
 
+        protected override isaCommand ReceiveMessage(isaCommand msg)
+        {
+            throw new NotImplementedException();
+        }
+
         ObservableCollection<OrderDetailsModelData> orders = new ObservableCollection<OrderDetailsModelData>();
         public ObservableCollection<OrderDetailsModelData> ShippedOrderCollection
         {
@@ -95,7 +99,7 @@ namespace MobileDeliveryMVVM.ViewModel
             }
         }
 
-        public CloseStopVM(SocketSettings set, string name) : base(set, name)
+        public CloseStopVM() : base()
         {
             Name = name;
             ShippedOrderCollection.CollectionChanged += (s, e) =>
@@ -107,39 +111,30 @@ namespace MobileDeliveryMVVM.ViewModel
                 BackOrderCollection = borders;
             };
 
-            pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
-            stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
+            //pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+            //stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
 
         }
 
-        void ProcessMessage(IMDMMessage std, Func<byte[], Task> cbsend = null)
-        {
-            if (std.Command == eCommand.StopsLoadComplete)
-            {
-                //stopThread.CompleteBackgroundWorker(std.RequestId);
-                //LoadStopsComplete = true;
-                return;
-            }
+        //protected override void ProcessMessageUMD(IMDMMessage std, Func<byte[], Task> cbsend = null)
+        //{
+        //    if (std.Command == eCommand.StopsLoadComplete)
+        //    {
+        //        //stopThread.CompleteBackgroundWorker(std.RequestId);
+        //        //LoadStopsComplete = true;
+        //        return;
+        //    }
 
-            //AddStop((StopData)std);
-        }
+        //    //AddStop((StopData)std);
+        //}
 
-        public CloseStopVM() : base(new SocketSettings()
-        {
-            url = "localhost",
-            port = 81,
-            srvurl = "localhost",
-            srvport = 81,
-            clienturl = "localhost",
-            clientport = 8181,
-            name = "CloseStopVM"
-        }, "CloseStopVM")
-        {
+        //public CloseStopVM() : base()
+        //{
 
-            pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
-            stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
+        //    pcStops = new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(ProcessMessage);
+        //    stopThread = new UMBackgroundWorker<IMDMMessage>(new UMBackgroundWorker<IMDMMessage>.ProgressChanged<IMDMMessage>(pcStops), rm, sm);
 
-        }
+        //}
 
     }
 }
